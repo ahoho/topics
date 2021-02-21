@@ -1,11 +1,17 @@
 from collections.abc import Iterable
-from typing import Optional
+from re import Pattern
+import logging
+from typing import Optional, Union
 
 from spacy.language import Language
 from spacy.tokens import Doc, Span
 from spacy.matcher import PhraseMatcher
 from spacy.util import filter_spans
 from spacy.lang.en.stop_words import STOP_WORDS
+
+from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 @Language.factory(
     "match_phrases",
@@ -63,8 +69,8 @@ def make_phrase_merger(
     nlp: Language,
     name: str,
     *,
-    stopwords: Optional[set[str]] = None,
-    filter_entities: Optional[set[str]] = None,
+    stopwords: Optional[list[str]] = None,
+    filter_entities: Optional[list[str]] = None,
 ):
     return PhraseMerger(stopwords, filter_entities)
 
@@ -72,14 +78,14 @@ def make_phrase_merger(
 class PhraseMerger:
     def __init__(
         self,
-        stopwords: Optional[set[str]] = None,
-        filter_entities: Optional[str] = None,
+        stopwords: Optional[list[str]] = None,
+        filter_entities: Optional[list[str]] = None,
     ):
         """
         Stopwords, and entity labels are preferred as sets since lookup is O(1).
         """
-        self.stopwords = stopwords
-        self.filter_entities = filter_entities
+        self.stopwords = set(stopwords)
+        self.filter_entities = set(filter_entities)
 
     def __call__(self, doc: Doc) -> Doc:
         """
@@ -97,9 +103,9 @@ class PhraseMerger:
 
                     # need to trim leading/trailing stopwords
                     if ent.label_ != "CUSTOM" and self.stopwords is not None:
-                        while ent[0].lower_ in self.stopwords:
+                        while ent and ent[0].lower_ in self.stopwords:
                             ent = ent[1:]
-                        while ent[-1].lower_ in self.stopwords:
+                        while ent and ent[-1].lower_ in self.stopwords:
                             ent = ent[:-1]
                     
                     if not ent:
@@ -108,28 +114,60 @@ class PhraseMerger:
         return doc
 
 
-
 def detect_phrases(
     docs: Iterable[str, str],
+    passes: int = 1,
     lowercase: bool = False,
-    max_phrase_length: int = 3,
+    detect_entities: bool = False,
+    token_regex: Optional[Pattern] = None,
     min_count: int = 5,
     threshold: float = 10.0,
     max_vocab_size: float = 40_000_000,
-    connector_words: Optional[set[str]] = None,
-) -> list[str]:
+    connector_words: Optional[Union[str, Iterable[str]]] = "english",
+    phrases: Optional[list[str]] = None,
+    n_process: int = 1,
+    total_docs: Optional[int] = None,
+) -> dict[str, float]:
     """
-    TODO:
-        Implement the pipeline from https://radimrehurek.com/gensim/models/phrases.html
-        Designed to be run before preprocessing, to create a list of corpus-specific
-        phrases
-    """
-    nlp = spacy.load(
-        "en_core_web_sm",
-        exclude=["lemmatizer", "attribute_ruler", "ner", ""]
-    )
-    tokens = tokenize_docs(
-        docs,
+    Pipeline from radimrehurek.com/gensim/models/phrases.html
 
-    )
-    raise NotImplementedError("TODO")
+    Designed to be run before preprocessing, to create a list of corpus-specific phrases
+
+    If `connector_words` is "english", will use English connector words from gensim.
+    """
+    from gensim.models.phrases import Phrases, ENGLISH_CONNECTOR_WORDS
+    from preprocess import tokenize_docs
+    
+    if connector_words == "english":
+        connector_words = ENGLISH_CONNECTOR_WORDS
+
+    for i in range(passes):
+        logger.info(f"On pass {i} of {passes}")
+        doc_tokens = tokenize_docs(
+            docs=docs,
+            lowercase=lowercase,
+            ngram_range=(1, 1),
+            remove_stopwords=True,
+            detect_entities=detect_entities,
+            double_count_phrases=False,
+            token_regex=token_regex,
+            n_process=n_process,
+            phrases=phrases,
+            stopwords=list(connector_words), # sets not json-serializable; spaCy upset
+        )
+
+        phraser = Phrases(
+            tqdm(doc_tokens, total=total_docs),
+            min_count=min_count,
+            threshold=threshold,
+            max_vocab_size=max_vocab_size,
+            progress_per=float("inf"),
+            connector_words=frozenset(connector_words),
+        )
+
+        # for future passes
+        phrases = list(phraser.export_phrases().keys())
+        detect_entities = False # these will have been added to `phrases`
+
+    return dict(sorted(phraser.export_phrases().items(), key=lambda kv: -kv[1]))
+
