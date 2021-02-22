@@ -141,7 +141,7 @@ def detect_phrases(
     If `connector_words` is "english", will use English connector words from gensim.
     """
     from gensim.models.phrases import Phrases, ENGLISH_CONNECTOR_WORDS
-    from preprocess import tokenize_docs
+    from .preprocess import tokenize_docs
 
     if connector_words == "english":
         connector_words = ENGLISH_CONNECTOR_WORDS
