@@ -4,7 +4,7 @@ A topic modeling package that aims to cover the entire preprocessing-estimation-
 
 For preprocessing, it relies on [spaCy](https://spacy.io/) to efficiently tokenize text, optionally merging together detected entities and other provided phrases (e.g. `New York` -> `New_York`). This addition has a big impact on topic readability.
 
-**Installation**:
+## Installation
 
 These instructions are temporary since this project is still in early development.
 
@@ -17,6 +17,8 @@ Then from the repository root, run
 ```console
 $ poetry install --extras gensim
 ```
+
+## CLI Instructions
 
 **Usage**:
 
