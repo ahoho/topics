@@ -161,8 +161,8 @@ def preprocess(
         "english",
         callback=stopwords_callback,
         help=(
-            "Filepath of stopwords, one word per line. "
-            "Set to `english` to use spaCy defaults or `none` to not remove stopwords",
+            "Filepath of stopwords, one word per line. Set to `english` to use spaCy "
+            "list (the default) or `none` to not remove stopwords",
         )
     ),
     encoding: str = "utf8",
@@ -250,7 +250,7 @@ def detect_phrases(
     ),
     output_dir: Path = typer.Argument(
         ...,
-        help="Output directory. Will save vocabulary file and a document-term matrix.",
+        help="Output directory. Will save a list of found phrases, ordered by their score.",
     ),
     input_format: InputFormat = typer.Option(
         InputFormat.text,
@@ -301,7 +301,8 @@ def detect_phrases(
         callback=connector_words_callback,
         help=(
             "Point to a path of connector words, or use `english` to use common english "
-            "articles (from gensim). Set to `none` to not use. From gensim docs: "
+            "articles (from spaCy), or `gensim_default` for a smaller list from gensim. "
+            " Set to `none` to not use. From gensim docs: "
             "'Set of words that may be included within a phrase, without affecting its "
             "scoring. No phrase can start nor end with a connector word; a phrase may "
             "contain any number of connector words in the middle.' "
