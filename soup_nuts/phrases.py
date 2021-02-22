@@ -87,7 +87,7 @@ class PhraseMerger:
         """
         Stopwords, and entity labels are preferred as sets since lookup is O(1).
         """
-        self.stopwords = set(stopwords)
+        self.stopwords = set(stopwords) if stopwords else None
         self.filter_entities = set(filter_entities)
 
     def __call__(self, doc: Doc) -> Doc:
@@ -128,7 +128,7 @@ def detect_phrases(
     min_count: int = 5,
     threshold: float = 10.0,
     max_vocab_size: float = 40_000_000,
-    connector_words: Optional[Union[str, Iterable[str]]] = "english",
+    connector_words: Optional[Iterable[str]] = None,
     phrases: Optional[list[str]] = None,
     n_process: int = 1,
     total_docs: Optional[int] = None,
@@ -140,11 +140,10 @@ def detect_phrases(
 
     If `connector_words` is "english", will use English connector words from gensim.
     """
-    from gensim.models.phrases import Phrases, ENGLISH_CONNECTOR_WORDS
+    # This function is self-contained, so we defer imports here (gensim is not used
+    # during preprocessing)
     from .preprocess import tokenize_docs
-
-    if connector_words == "english":
-        connector_words = ENGLISH_CONNECTOR_WORDS
+    from gensim.models import Phrases
 
     for i in range(passes):
         logger.info(f"On pass {i} of {passes}")
@@ -152,13 +151,13 @@ def detect_phrases(
             docs=docs_reader(),
             lowercase=lowercase,
             ngram_range=(1, 1),
-            remove_stopwords=True,
             detect_entities=detect_entities,
             double_count_phrases=False,
             token_regex=token_regex,
             n_process=n_process,
             phrases=phrases,
-            stopwords=list(connector_words),  # sets not json-serializable; spaCy upset
+            # sets not json-serializable; spaCy gets upset
+            stopwords=list(connector_words) if connector_words else None,
         )
         phraser = Phrases(
             tqdm((toks for toks, id in doc_tokens), total=total_docs),
@@ -166,7 +165,7 @@ def detect_phrases(
             threshold=threshold,
             max_vocab_size=max_vocab_size,
             progress_per=float("inf"),
-            connector_words=frozenset(connector_words),
+            connector_words=frozenset(connector_words) if connector_words else [],
         )
 
         # for future passes

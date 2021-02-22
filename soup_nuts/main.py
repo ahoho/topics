@@ -45,7 +45,15 @@ def token_regex_callback(value: str) -> re.Pattern:
     return re.compile(value)
 
 
-@app.command()
+def stopwords_callback(value: str) -> Iterable[str]:
+    if value == "english":
+        return list(STOP_WORDS)
+    if value == "none":
+        return None
+    return read_lines(value)
+
+
+@app.command(help="Preprocess documents to a document-term matrix.")
 def preprocess(
     input_path: list[Path] = typer.Argument(
         ...,
@@ -97,9 +105,6 @@ def preprocess(
             "(borrowed from sklearn.feature_extraction.text.CountVectorizer)"
         ),
     ),
-    remove_stopwords: bool = typer.Option(
-        True, help="Remove stopwords during processing."
-    ),
     min_doc_freq: float = typer.Option(
         1,
         min=0,
@@ -150,14 +155,14 @@ def preprocess(
         exists=True,
         file_okay=True,
         dir_okay=False,
-        help="List of known phrases (e.g., `New_York`). Must be connected with underscore",
+        help="Filepath of known phrases (e.g., `New_York`). Must be connected with underscore",
     ),
-    stopwords: Optional[Path] = typer.Option(
-        None,
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        help="Filepath of stopwords, one word per line. Uses spaCy list if unspecified.",
+    stopwords: Optional[str] = typer.Option(
+        "english",
+        help=(
+            "Filepath of stopwords, one word per line. "
+            "Set to `english` to use spaCy defaults or `none` to not remove stopwords",
+        )
     ),
     encoding: str = "utf8",
     n_process: int = -1,
@@ -194,14 +199,12 @@ def preprocess(
     # load external wordlist files
     vocabulary = read_lines(vocabulary, encoding) if vocabulary else None
     phrases = read_lines(phrases, encoding) if phrases else None
-    stopwords = read_lines(stopwords, encoding) if stopwords else list(STOP_WORDS)
 
     # create the document-term matrix
     dtm, vocab, ids = docs_to_matrix(
         docs,
         lowercase=lowercase,
         ngram_range=ngram_range,
-        remove_stopwords=remove_stopwords,
         min_doc_freq=min_doc_freq,
         max_doc_freq=max_doc_freq,
         max_vocab_size=max_vocab_size,
@@ -225,15 +228,19 @@ def preprocess(
         save_dtm_as_jsonl(dtm, vocab, ids, Path(output_dir, "data.jsonl"))
 
 
-def connector_words_callback(value: str) -> Union[str, Iterable[str]]:
+def connector_words_callback(value: str) -> Iterable[str]:
+    from gensim.models.phrases import ENGLISH_CONNECTOR_WORDS
+
     if value == "english":
-        return "english"
+        return ENGLISH_CONNECTOR_WORDS | STOP_WORDS
+    if value == "gensim_default":
+        return ENGLISH_CONNECTOR_WORDS
     if value == "none":
-        return []
+        return None
     return read_lines(value)
 
 
-@app.command()
+@app.command(help="Learn phrases (e.g., `New_York`) from the data.")
 def detect_phrases(
     input_path: list[Path] = typer.Argument(
         ...,

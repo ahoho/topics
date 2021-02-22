@@ -84,7 +84,6 @@ def docs_to_matrix(
     as_tuples: bool = True,
     lowercase: bool = False,
     ngram_range: tuple[int, int] = (1, 1),
-    remove_stopwords: bool = True,
     min_doc_freq: float = 1.0,
     max_doc_freq: float = 1.0,
     max_vocab_size: Optional[float] = None,
@@ -105,7 +104,6 @@ def docs_to_matrix(
         as_tuples=as_tuples,
         lowercase=lowercase,
         ngram_range=ngram_range,
-        remove_stopwords=remove_stopwords,
         detect_entities=detect_entities,
         double_count_phrases=double_count_phrases,
         token_regex=token_regex,
@@ -137,7 +135,6 @@ def tokenize_docs(
     as_tuples: bool = True,
     lowercase: bool = False,
     ngram_range: tuple[int, int] = (1, 1),
-    remove_stopwords: bool = True,
     detect_entities: bool = False,
     double_count_phrases: bool = False,
     token_regex: Optional[Pattern] = None,
@@ -174,8 +171,8 @@ def tokenize_docs(
     def to_keep(x: str) -> bool:
         if vocabulary:
             return x in vocabulary
-        if remove_stopwords and x in stopwords:
-            return False
+        if stopwords:
+            return x not in stopwords
         if token_regex:
             return token_regex.search(x)
 
