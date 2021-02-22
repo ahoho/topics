@@ -159,6 +159,7 @@ def preprocess(
     ),
     stopwords: Optional[str] = typer.Option(
         "english",
+        callback=stopwords_callback,
         help=(
             "Filepath of stopwords, one word per line. "
             "Set to `english` to use spaCy defaults or `none` to not remove stopwords",
