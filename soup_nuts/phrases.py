@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
+
 @Language.factory(
     "match_phrases",
     default_config={
@@ -38,7 +39,7 @@ class PipedPhraseMatcher:
     ):
         """
         Basically a "custom" NER pipeline relying on a predefined phraselist.
-        
+
         If these are to take priority (in case of span overlap), run before standard NER.
 
         `lowercase` does not transform the labels, but determines whether we lowercase
@@ -51,7 +52,9 @@ class PipedPhraseMatcher:
         self.matcher.add("phrase_list", patterns)
 
     def __call__(self, doc: Doc) -> Doc:
-        ents = [Span(doc, start=s, end=e, label="CUSTOM") for _, s, e in self.matcher(doc)]
+        ents = [
+            Span(doc, start=s, end=e, label="CUSTOM") for _, s, e in self.matcher(doc)
+        ]
         ents = filter_spans(ents)
         doc.set_ents(ents)
         return doc
@@ -61,7 +64,7 @@ class PipedPhraseMatcher:
     "merge_phrases",
     default_config={
         "stopwords": STOP_WORDS,
-        "filter_entities": {'PERSON', 'FACILITY', 'GPE', 'LOC', 'CUSTOM'},
+        "filter_entities": {"PERSON", "FACILITY", "GPE", "LOC", "CUSTOM"},
     },
     retokenizes=True,
 )
@@ -98,7 +101,9 @@ class PhraseMerger:
             for ent in doc.ents:
                 if self.filter_entities is None or ent.label_ in self.filter_entities:
                     attrs = {
-                        "tag": ent.root.tag, "dep": ent.root.dep, "ent_type": ent.label
+                        "tag": ent.root.tag,
+                        "dep": ent.root.dep,
+                        "ent_type": ent.label,
                     }
 
                     # need to trim leading/trailing stopwords
@@ -107,7 +112,7 @@ class PhraseMerger:
                             ent = ent[1:]
                         while ent and ent[-1].lower_ in self.stopwords:
                             ent = ent[:-1]
-                    
+
                     if not ent:
                         continue
                     retokenizer.merge(ent, attrs=attrs)
@@ -137,7 +142,7 @@ def detect_phrases(
     """
     from gensim.models.phrases import Phrases, ENGLISH_CONNECTOR_WORDS
     from preprocess import tokenize_docs
-    
+
     if connector_words == "english":
         connector_words = ENGLISH_CONNECTOR_WORDS
 
@@ -153,7 +158,7 @@ def detect_phrases(
             token_regex=token_regex,
             n_process=n_process,
             phrases=phrases,
-            stopwords=list(connector_words), # sets not json-serializable; spaCy upset
+            stopwords=list(connector_words),  # sets not json-serializable; spaCy upset
         )
         phraser = Phrases(
             tqdm((toks for toks, id in doc_tokens), total=total_docs),
@@ -166,7 +171,6 @@ def detect_phrases(
 
         # for future passes
         phrases = list(phraser.export_phrases().keys())
-        detect_entities = False # these will have been added to `phrases`
+        detect_entities = False  # these will have been added to `phrases`
 
     return dict(sorted(phraser.export_phrases().items(), key=lambda kv: -kv[1]))
-

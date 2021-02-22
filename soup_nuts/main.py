@@ -1,4 +1,3 @@
-
 from collections.abc import Iterable, Iterator
 import logging
 import re
@@ -13,7 +12,12 @@ from spacy.lang.en.stop_words import STOP_WORDS
 from preprocess import read_docs, read_jsonl, docs_to_matrix
 from phrases import detect_phrases as detect_phrases_
 from utils import (
-    get_total_lines, read_lines, save_lines, save_json, save_dtm_as_jsonl, save_params
+    get_total_lines,
+    read_lines,
+    save_lines,
+    save_json,
+    save_dtm_as_jsonl,
+    save_params,
 )
 
 app = typer.Typer()
@@ -49,12 +53,11 @@ def preprocess(
         help="File(s) containing raw text (works with glob patterns)",
     ),
     output_dir: Path = typer.Argument(
-        ...,
-        help="Output directory. Will save vocabulary and the document-term matrix."
+        ..., help="Output directory. Will save vocabulary and the document-term matrix."
     ),
     input_format: InputFormat = typer.Option(
         InputFormat.text,
-        help="Format of input file(s). If jsonlist, can specify an id variable"
+        help="Format of input file(s). If jsonlist, can specify an id variable",
     ),
     output_format: OutputFormat = typer.Option(
         OutputFormat.sparse,
@@ -67,11 +70,10 @@ def preprocess(
     ),
     lines_are_documents: bool = typer.Option(
         True,
-        help="Treat each line in a file as a document (else, each file is a document). "
+        help="Treat each line in a file as a document (else, each file is a document). ",
     ),
     jsonl_text_key: Optional[str] = None,
     jsonl_id_key: Optional[str] = None,
-
     # Processing
     lowercase: bool = False,
     token_regex: str = typer.Option(
@@ -84,7 +86,7 @@ def preprocess(
             "or punctuation outside of hyphens, periods, and underscores. "
             "`all`: do not filter "
             "other values will be interpreted as regex."
-        )
+        ),
     ),
     ngram_range: tuple[int, int] = typer.Option(
         (1, 1),
@@ -96,8 +98,7 @@ def preprocess(
         ),
     ),
     remove_stopwords: bool = typer.Option(
-        True,
-        help="Remove stopwords during processing."
+        True, help="Remove stopwords during processing."
     ),
     min_doc_freq: float = typer.Option(
         1,
@@ -124,9 +125,7 @@ def preprocess(
     ),
     detect_entities: bool = typer.Option(
         True,
-        help=(
-            "Automatically detect entities with spaCy, `New York` -> `New_York`. "
-        )
+        help=("Automatically detect entities with spaCy, `New York` -> `New_York`. "),
     ),
     double_count_phrases: bool = typer.Option(
         True,
@@ -136,32 +135,29 @@ def preprocess(
         ),
     ),
     max_doc_size: Optional[int] = typer.Option(
-        None,
-        min=0,
-        help="Maximum document size in whitespace-delimited tokens"
+        None, min=0, help="Maximum document size in whitespace-delimited tokens"
     ),
-    
     # External files
     vocabulary: Optional[Path] = typer.Option(
         None,
         exists=True,
         file_okay=True,
         dir_okay=False,
-        help="Use an external vocabulary list. Overrides other preprocessing options."
+        help="Use an external vocabulary list. Overrides other preprocessing options.",
     ),
     phrases: Optional[Path] = typer.Option(
         None,
         exists=True,
         file_okay=True,
         dir_okay=False,
-        help="List of known phrases (e.g., `New_York`). Must be connected with underscore"
+        help="List of known phrases (e.g., `New_York`). Must be connected with underscore",
     ),
     stopwords: Optional[Path] = typer.Option(
         None,
         exists=True,
         file_okay=True,
         dir_okay=False,
-        help="Filepath of stopwords, one word per line. Uses spaCy list if unspecified."
+        help="Filepath of stopwords, one word per line. Uses spaCy list if unspecified.",
     ),
     encoding: str = "utf8",
     n_process: int = -1,
@@ -177,7 +173,9 @@ def preprocess(
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
         if jsonl_text_key is None:
             raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
-        docs = read_jsonl(input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
+        docs = read_jsonl(
+            input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding
+        )
 
     if vocabulary and detect_entities:
         logger.warn(
@@ -217,7 +215,7 @@ def preprocess(
         n_process=n_process,
     )
 
-    # save out 
+    # save out
     save_params(params, Path(output_dir, "params.json"))
     if output_format == "sparse":
         sparse.save_npz(Path(output_dir, "dtm.npz"), dtm)
@@ -234,6 +232,7 @@ def connector_words_callback(value: str) -> Union[str, Iterable[str]]:
         return []
     return read_lines(value)
 
+
 @app.command()
 def detect_phrases(
     input_path: list[Path] = typer.Argument(
@@ -243,24 +242,21 @@ def detect_phrases(
     ),
     output_dir: Path = typer.Argument(
         ...,
-        help="Output directory. Will save vocabulary file and a document-term matrix."
+        help="Output directory. Will save vocabulary file and a document-term matrix.",
     ),
     input_format: InputFormat = typer.Option(
         InputFormat.text,
-        help="Format of input file(s). If jsonlist, can specify an id variable"
+        help="Format of input file(s). If jsonlist, can specify an id variable",
     ),
     lines_are_documents: bool = typer.Option(
         True,
-        help="Treat each line in a file as a document (else, each file is a document). "
+        help="Treat each line in a file as a document (else, each file is a document). ",
     ),
     jsonl_text_key: Optional[str] = None,
     jsonl_id_key: Optional[str] = None,
     max_doc_size: Optional[int] = typer.Option(
-        None,
-        min=0,
-        help="Maximum document size in whitespace-delimited tokens"
+        None, min=0, help="Maximum document size in whitespace-delimited tokens"
     ),
-
     passes: int = typer.Option(
         1,
         help=(
@@ -275,7 +271,7 @@ def detect_phrases(
             "Automatically detect entities with spaCy, `New York` -> `New_York`. "
             "If you plan to set this to `True` during preprocessing, do it now "
             "and set it to `False` after"
-        )
+        ),
     ),
     token_regex: str = typer.Option(
         "alpha",
@@ -287,7 +283,7 @@ def detect_phrases(
             "or punctuation outside of hyphens, periods, and underscores. "
             "`all`: do not filter "
             "other values will be interpreted as regex."
-        )
+        ),
     ),
     min_count: int = 5,
     threshold: float = 10.0,
@@ -320,14 +316,18 @@ def detect_phrases(
 
     # create a doc-by-doc generator
     if input_format.value == "text":
-        read_docs_ = lambda: read_docs(input_path, lines_are_documents, max_doc_size, encoding)
+        read_docs_ = lambda: read_docs(
+            input_path, lines_are_documents, max_doc_size, encoding
+        )
 
     if input_format.value == "jsonl":
         if not lines_are_documents:
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
         if jsonl_text_key is None:
             raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
-        read_docs_ = lambda: read_jsonl(input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
+        read_docs_ = lambda: read_jsonl(
+            input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding
+        )
 
     # retrieve the total number of documents for progress bars
     total_docs = len(input_path)
@@ -335,7 +335,7 @@ def detect_phrases(
         total_docs = get_total_lines(input_path, encoding=encoding)
 
     phrases = read_lines(phrases, encoding) if phrases else None
-    
+
     phrases = detect_phrases_(
         docs_reader=read_docs_,
         passes=passes,
@@ -352,6 +352,7 @@ def detect_phrases(
     )
     save_params(params, Path(output_dir, "params.json"))
     save_lines(phrases.keys(), Path(output_dir, "phrases.json"))
+
 
 @app.command()
 def run_model():

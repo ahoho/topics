@@ -12,6 +12,7 @@ from typer.models import NoneType
 
 logger = logging.getLogger(__name__)
 
+
 def get_total_lines(paths: list[Union[Path, str]], encoding: str = "utf-8") -> int:
     """
     Get the total number of lines (read: documents) to process
@@ -57,7 +58,9 @@ def save_params(params: dict[str, Any], fpath: Union[str, Path]):
             v = v.value
         if not isinstance(v, (tuple, list) + safe_types):
             v = str(v)
-        if isinstance(v, (tuple, list)) and any((not isinstance(i, safe_types)) for i in v):
+        if isinstance(v, (tuple, list)) and any(
+            (not isinstance(i, safe_types)) for i in v
+        ):
             v = [str(v) for v in v]
         safe_params[k] = v
     save_json(safe_params, fpath, indent=2)
@@ -73,7 +76,7 @@ def save_dtm_as_jsonl(
     Save document-term matrix as a dictionary in the following format, where each
     row is a document:
     {
-        "id": <doc_1>, 
+        "id": <doc_1>,
         "counts": {
             <word_2>: <count_of_word_2_in_doc_1>,
             <word_6>: <count_of_word_6_in_doc_1>,
@@ -85,7 +88,7 @@ def save_dtm_as_jsonl(
     with open(outpath, mode="w") as outfile:
         for i, (row, id) in enumerate(zip(dtm, ids)):
             words_in_doc = [inv_vocab[idx] for idx in row.indices]
-            counts = [int(v) for v in row.data] # int64 not serializable
+            counts = [int(v) for v in row.data]  # int64 not serializable
             word_counts = dict(zip(words_in_doc, counts))
             row_json = json.dumps({"id": id, "counts": word_counts})
             if i == 0:
@@ -99,7 +102,7 @@ def gen_ngrams(tokens: list[str], min_n: int, max_n: int) -> list[str]:
     Create all ngrams from `tokens` where n is between `min_n`, `max_n`, inclusive.
     """
     return [
-        "_".join(tokens[i:i+n])
-        for n in range(min_n, max_n+1)
-        for i in range(len(tokens)-n+1)
+        "_".join(tokens[i : i + n])
+        for n in range(min_n, max_n + 1)
+        for i in range(len(tokens) - n + 1)
     ]
