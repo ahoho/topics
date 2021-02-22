@@ -80,7 +80,8 @@ def _truncate_doc(
 
                     
 def docs_to_matrix(
-    docs: Iterable[tuple[str, str]],
+    docs: Iterable[Union[tuple[str, str], str]],
+    as_tuples: bool = True,
     lowercase: bool = False,
     ngram_range: tuple[int, int] = (1, 1),
     remove_stopwords: bool = True,
@@ -101,6 +102,7 @@ def docs_to_matrix(
     """
     doc_tokens = tokenize_docs(
         docs=docs,
+        as_tuples=as_tuples,
         lowercase=lowercase,
         ngram_range=ngram_range,
         remove_stopwords=remove_stopwords,
@@ -112,9 +114,8 @@ def docs_to_matrix(
         stopwords=stopwords,
         n_process=n_process,
     )
-    if vocabulary:
-        # TODO something else
-        pass
+    if not as_tuples: # add ids if none were used
+        doc_tokens = ((doc, i) for i, doc in enumerate(doc_tokens))
 
     # CountVectorizer is considerably faster than gensim for creating the doc-term mtx
     cv = CountVectorizerWithID(
@@ -132,7 +133,8 @@ def docs_to_matrix(
             
 
 def tokenize_docs(
-    docs: Iterable[tuple[str, str]],
+    docs: Iterable[Union[tuple[str, str], str]],
+    as_tuples: bool = True,
     lowercase: bool = False,
     ngram_range: tuple[int, int] = (1, 1),
     remove_stopwords: bool = True,
@@ -143,9 +145,9 @@ def tokenize_docs(
     phrases: Optional[list[str]] = None,
     stopwords: Optional[list[str]] = None,
     n_process: int = 1,
-) -> Iterator[list[str, str]]:
+) -> Iterator[Union[tuple[str, str], str]]:
     """
-    Tokenize a stream of documents. Tries to be performant by using nlp.pipe and 
+    Tokenize a stream of documents. Tries to be performant by using nlp.pipe 
     """
     # initialize the spacy model
     nlp = create_pipeline(
@@ -161,7 +163,7 @@ def tokenize_docs(
         if double_count_phrases and " " in text:
             return (text.replace(' ', '_'), *text.split())
         else:
-            return (text.replace(" ", "_"),)
+            return (text.replace(" ", "_"), )
 
     # retain only desirable words
     if vocabulary:
@@ -179,15 +181,22 @@ def tokenize_docs(
 
         return True
 
-    # send through the pipe, `as_tuples` carries the ids forward 
-    for doc, id in nlp.pipe(docs, as_tuples=True, n_process=n_process):
+    # send through the pipe, `as_tuples` carries the ids forward
+    for doc in nlp.pipe(docs, as_tuples=as_tuples, n_process=n_process):
+        if as_tuples:
+            doc, id = doc
         # If using an outside vocabulary, continue apace
         tokens = [text for tok in doc for text in to_string(tok) if to_keep(text)]
         min_n, max_n = ngram_range
         if max_n == 1:
-            yield tokens, id
+            if as_tuples:
+                tokens = tokens, id
+            yield tokens
         else:
-            yield gen_ngrams(tokens, min_n, max_n), id
+            ngrams = gen_ngrams(tokens, min_n, max_n)
+            if as_tuples:
+                ngrams = ngrams, id
+            yield ngrams
 
 
 def create_pipeline(
