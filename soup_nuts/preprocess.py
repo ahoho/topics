@@ -13,8 +13,8 @@ import spacy
 from spacy.language import Language
 from spacy.tokens import Token
 
-from phrases import make_phrase_matcher, make_phrase_merger
-from utils import gen_ngrams
+from .phrases import make_phrase_matcher, make_phrase_merger
+from .utils import gen_ngrams
 
 logger = logging.getLogger(__name__)
 
