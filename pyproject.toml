@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "soup-nuts"
+version = "0.1.0"
+description = """A topic modeling package that aims to cover the entire \
+    preprocessing-estimation-analysis pipeline: it's soup to nuts.
+    """
+authors = ["Alexander Hoyle <hoyle@umd.edu>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+soup-nuts = "soup_nuts.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+spacy = "^3.0"
+scikit-learn = "^0.24"
+tqdm = "*"
+typer = {extras = ["all"], version = "^0.3.2"}
+# once 4.0 is out, will update
+gensim = { git = "https://github.com/RaRe-Technologies/gensim.git", rev = "cfc9e959b6b742adcc618ac58cf5f8e4a150d08f", optional = true}
+
+[tool.poetry.extras]
+gensim = ["gensim"]
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
