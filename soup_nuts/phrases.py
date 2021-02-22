@@ -156,8 +156,7 @@ def detect_phrases(
             token_regex=token_regex,
             n_process=n_process,
             phrases=phrases,
-            # sets not json-serializable; spaCy gets upset
-            stopwords=list(connector_words) if connector_words else None,
+            stopwords=None, # do not delete until doing connection below
         )
         phraser = Phrases(
             tqdm((toks for toks, id in doc_tokens), total=total_docs),
