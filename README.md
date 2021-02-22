@@ -26,9 +26,9 @@ $ soup-nuts [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `Learn phrases (e.g., `New_York`) from the data.`
-* `preprocess`: Preprocess documents to a document-term...
-* `run-model`
+* `preprocess`: Preprocess documents to a document-term matrix.
+* `detect-phrases`: Learn phrases from the data.
+* `run-model`: Run a model of your choice [not yet implemented]
 
 ## `soup-nuts preprocess`
 
@@ -53,17 +53,21 @@ $ soup-nuts preprocess [OPTIONS] INPUT_PATH... OUTPUT_DIR
 * `--jsonl-text-key TEXT`
 * `--jsonl-id-key TEXT`
 * `--lowercase / --no-lowercase`: [default: False]
-* `--token-regex TEXT`: How to retain tokens: `alpha`: keep anything containing at least one letter. `wordlike`: keep alphanumeric, eliminating words with all numbers, or punctuation outside of hyphens, periods, and underscores. `all`: do not filter other values will be interpreted as regex.  [default: alpha]
+* `--token-regex TEXT`: How to retain tokens: [default: alpha]
+    * `alpha`: keep anything containing at least one letter.
+    * `wordlike`: keep alphanumeric, eliminating words with all numbers, or punctuation outside of hyphens, periods, and underscores.
+    * `all`: do not filter
+    * other values will be interpreted as regex.
 * `--ngram-range <INTEGER INTEGER>...`: Range of ngrams to use. e.g., (1, 1) is unigrams; (1, 2) unigrams & bigrams; (2, 2) bigrams only. Not reccomended for use with phrasing options. (borrowed from sklearn.feature_extraction.text.CountVectorizer)  [default: 1, 1]
 * `--min-doc-freq FLOAT RANGE`: Ignore terms with a document frequency lower than this threshold (if < 1, treated as a proportion of documents).(borrowed from sklearn.feature_extraction.text.CountVectorizer)  [default: 1]
 * `--max-doc-freq FLOAT RANGE`: Ignore terms with a document frequency higher than this threshold, i.e., corpus-specific stopwords (if <= 1, treated as a proportion of documents).(borrowed from sklearn.feature_extraction.text.CountVectorizer)  [default: 1.0]
 * `--max-vocab-size INTEGER RANGE`: Maximum size of the vocabulary. If < 1, share of total vocab to keep
 * `--detect-entities / --no-detect-entities`: Automatically detect entities with spaCy, `New York` -> `New_York`.   [default: True]
-* `--double-count-phrases / --no-double-count-phrases`: Collocations are included alongside constituent unigrams, `New York -> `New York New_York`. Anecdotally forms more interpretable topics.  [default: True]
+* `--double-count-phrases / --no-double-count-phrases`: Collocations are included alongside constituent unigrams, `New York -> New York New_York`. Anecdotally forms more interpretable topics.  [default: True]
 * `--max-doc-size INTEGER RANGE`: Maximum document size in whitespace-delimited tokens
 * `--vocabulary FILE`: Use an external vocabulary list. Overrides other preprocessing options.
 * `--phrases FILE`: Filepath of known phrases (e.g., `New_York`). Must be connected with underscore
-* `--stopwords FILE`: Filepath of stopwords, one word per line. Set to `english` to use spaCy defaults or `none` to not remove stopwords
+* `--stopwords FILE`: Filepath of stopwords, one word per line. Set to `english` to use spaCy defaults or `none` to not remove stopwords. [default: english]
 * `--encoding TEXT`: [default: utf8]
 * `--n-process INTEGER`: [default: -1]
 * `--help`: Show this message and exit.
@@ -75,13 +79,13 @@ Learn phrases (e.g., `New_York`) from the data.
 **Usage**:
 
 ```console
-$ soup-nuts Learn phrases (e.g., `New_York`) from the data. [OPTIONS] INPUT_PATH... OUTPUT_DIR
+$ soup-nuts detect-phrases [OPTIONS] INPUT_PATH... OUTPUT_DIR
 ```
 
 **Arguments**:
 
 * `INPUT_PATH...`: File(s) containing raw text (works with glob patterns)  [required]
-* `OUTPUT_DIR`: Output directory. Will save vocabulary file and a document-term matrix.  [required]
+* `OUTPUT_DIR`: Output directory. Will save a list of found phrases, ordered by their score.  [required]
 
 **Options**:
 
@@ -92,12 +96,19 @@ $ soup-nuts Learn phrases (e.g., `New_York`) from the data. [OPTIONS] INPUT_PATH
 * `--max-doc-size INTEGER RANGE`: Maximum document size in whitespace-delimited tokens
 * `--passes INTEGER`: Passes over the data, where more passes leads to longer phrase detection, e.g., pass one yields `New_York`, pass two yields `New_York_City`.  [default: 1]
 * `--lowercase / --no-lowercase`: [default: False]
-* `--detect-entities / --no-detect-entities`: Automatically detect entities with spaCy, `New York` -> `New_York`. If you plan to set this to `True` during preprocessing, do it now and set it to `False` after  [default: True]
-* `--token-regex TEXT`: How to retain tokens: `alpha`: keep anything containing at least one letter. `wordlike`: keep alphanumeric, eliminating words with all numbers, or punctuation outside of hyphens, periods, and underscores. `all`: do not filter other values will be interpreted as regex.  [default: alpha]
+* `--detect-entities / --no-detect-entities`: Automatically detect entities with spaCy, `New York` -> `New_York`. If you plan to set this to `True` during preprocessing, do it now and set it to `False` during `soup-nuts preprocess` [default: True]
+* `--token-regex TEXT`: How to retain tokens: [default: alpha]
+    * `alpha`: keep anything containing at least one letter.
+    * `wordlike`: keep alphanumeric, eliminating words with all numbers, or punctuation outside of hyphens, periods, and underscores.
+    * `all`: do not filter
+    * other values will be interpreted as regex.
 * `--min-count INTEGER`: [default: 5]
 * `--threshold FLOAT`: [default: 10.0]
 * `--max-vocab-size FLOAT`: [default: 40000000]
-* `--connector-words TEXT`: Point to a path of connector words, or use `english` to use common english articles (from gensim). Set to `none` to not use. From gensim docs: 'Set of words that may be included within a phrase, without affecting its scoring. No phrase can start nor end with a connector word; a phrase may contain any number of connector words in the middle.'   [default: english]
+* `--connector-words TEXT`: Point to a path of connector words. From gensim docs: 'Set of words that may be included within a phrase, without affecting its scoring. No phrase can start nor end with a connector word; a phrase may contain any number of connector words in the middle.' [default: english]
+    * `english: use common english articles and stopwords (from spaCy).
+    * `gensim_default`: smaller set of connector words from gensim.
+    * `none`: do not use
 * `--phrases FILE`: Path to list of already-known phrases (e.g., `New_York`). Must be connected with underscore.
 * `--encoding TEXT`: [default: utf-8]
 * `--n-process INTEGER`: [default: -1]
