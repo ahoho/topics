@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from re import Pattern
 import logging
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 from spacy.language import Language
 from spacy.tokens import Doc, Span
@@ -115,7 +115,7 @@ class PhraseMerger:
 
 
 def detect_phrases(
-    docs: Iterable[str, str],
+    docs_reader: Callable,
     passes: int = 1,
     lowercase: bool = False,
     detect_entities: bool = False,
@@ -144,7 +144,7 @@ def detect_phrases(
     for i in range(passes):
         logger.info(f"On pass {i} of {passes}")
         doc_tokens = tokenize_docs(
-            docs=docs,
+            docs=docs_reader(),
             lowercase=lowercase,
             ngram_range=(1, 1),
             remove_stopwords=True,
@@ -155,9 +155,8 @@ def detect_phrases(
             phrases=phrases,
             stopwords=list(connector_words), # sets not json-serializable; spaCy upset
         )
-
         phraser = Phrases(
-            tqdm(doc_tokens, total=total_docs),
+            tqdm((toks for toks, id in doc_tokens), total=total_docs),
             min_count=min_count,
             threshold=threshold,
             max_vocab_size=max_vocab_size,

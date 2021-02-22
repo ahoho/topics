@@ -12,7 +12,9 @@ from spacy.lang.en.stop_words import STOP_WORDS
 
 from preprocess import read_docs, read_jsonl, docs_to_matrix
 from phrases import detect_phrases as detect_phrases_
-from utils import get_total_lines, read_lines, save_json, save_dtm_as_jsonl, save_params
+from utils import (
+    get_total_lines, read_lines, save_lines, save_json, save_dtm_as_jsonl, save_params
+)
 
 app = typer.Typer()
 
@@ -318,14 +320,14 @@ def detect_phrases(
 
     # create a doc-by-doc generator
     if input_format.value == "text":
-        docs = read_docs(input_path, lines_are_documents, max_doc_size, encoding)
+        read_docs_ = lambda: read_docs(input_path, lines_are_documents, max_doc_size, encoding)
 
     if input_format.value == "jsonl":
         if not lines_are_documents:
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
         if jsonl_text_key is None:
             raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
-        docs = read_jsonl(input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
+        read_docs_ = lambda: read_jsonl(input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
 
     # retrieve the total number of documents for progress bars
     total_docs = len(input_path)
@@ -335,7 +337,7 @@ def detect_phrases(
     phrases = read_lines(phrases, encoding) if phrases else None
     
     phrases = detect_phrases_(
-        docs=docs,
+        docs_reader=read_docs_,
         passes=passes,
         lowercase=lowercase,
         detect_entities=detect_entities,
@@ -346,7 +348,7 @@ def detect_phrases(
         connector_words=connector_words,
         phrases=phrases,
         n_process=n_process,
-        total_tocs=total_docs,
+        total_docs=total_docs,
     )
     save_params(params, Path(output_dir, "params.json"))
     save_lines(phrases.keys(), Path(output_dir, "phrases.json"))
