@@ -356,6 +356,3 @@ def detect_phrases(
 @app.command()
 def run_model():
     pass
-
-if __name__ == "__main__":
-    app()
