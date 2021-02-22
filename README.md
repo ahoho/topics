@@ -8,14 +8,14 @@ For preprocessing, it relies on [spaCy](https://spacy.io/) to efficiently tokeni
 
 These instructions are temporary since this project is still in early development.
 
-To install, you first need to get (poetry)[https://python-poetry.org/docs/].
+To install, you first need to get [`poetry`](https://python-poetry.org/docs/).
 
 `poetry` can create virtual environments automatically, but will also detect any activated virtual environment and use that instead (e.g., if you are using [conda](https://docs.conda.io/en/latest/miniconda.html), as I do, run `conda create -n soup-nuts python=3.9 && conda activate soup-nuts`).
 
 Then from the repository root, run
 
 ```console
-poetry install --extras gensim
+$ poetry install --extras gensim
 ```
 
 **Usage**:
