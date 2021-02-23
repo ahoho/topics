@@ -64,7 +64,8 @@ $ soup-nuts preprocess [OPTIONS] INPUT_PATH... OUTPUT_DIR
 * `--min-doc-freq FLOAT RANGE`: Ignore terms with a document frequency lower than this threshold (if < 1, treated as a proportion of documents).(borrowed from sklearn.feature_extraction.text.CountVectorizer)  [default: 1]
 * `--max-doc-freq FLOAT RANGE`: Ignore terms with a document frequency higher than this threshold, i.e., corpus-specific stopwords (if <= 1, treated as a proportion of documents).(borrowed from sklearn.feature_extraction.text.CountVectorizer)  [default: 1.0]
 * `--max-vocab-size INTEGER RANGE`: Maximum size of the vocabulary. If < 1, share of total vocab to keep
-* `--detect-entities / --no-detect-entities`: Automatically detect entities with spaCy, `New York` -> `New_York`.   [default: True]
+* `--detect-entities / --no-detect-entities`: Automatically detect entities with spaCy, `New York` -> `New_York`.   [default: False]
+* `--detect-noun-chunks / --no-noun-chunks`: Automatically detect noun chunks with spaCy   [default: False]
 * `--double-count-phrases / --no-double-count-phrases`: Collocations are included alongside constituent unigrams, `New York -> New York New_York`. Anecdotally forms more interpretable topics.  [default: True]
 * `--max-doc-size INTEGER RANGE`: Maximum document size in whitespace-delimited tokens
 * `--vocabulary FILE`: Use an external vocabulary list. Overrides other preprocessing options.
@@ -99,6 +100,7 @@ $ soup-nuts detect-phrases [OPTIONS] INPUT_PATH... OUTPUT_DIR
 * `--passes INTEGER`: Passes over the data, where more passes leads to longer phrase detection, e.g., pass one yields `New_York`, pass two yields `New_York_City`.  [default: 1]
 * `--lowercase / --no-lowercase`: [default: False]
 * `--detect-entities / --no-detect-entities`: Automatically detect entities with spaCy, `New York` -> `New_York`. If you plan to set this to `True` during preprocessing, do it now and set it to `False` during `soup-nuts preprocess` [default: True]
+* `--detect-noun-chunks / --no-noun-chunks`: Automatically detect noun chunks with spaCy. If you plan to set this to `True` during preprocessing, do it now and set it to `False` during `soup-nuts preprocess` [default: True]
 * `--token-regex TEXT`: How to retain tokens: [default: alpha]
     * `alpha`: keep anything containing at least one letter.
     * `wordlike`: keep alphanumeric, eliminating words with all numbers, or punctuation outside of hyphens, periods, and underscores.
