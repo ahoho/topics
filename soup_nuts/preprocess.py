@@ -171,11 +171,10 @@ def tokenize_docs(
     def to_keep(x: str) -> bool:
         if vocabulary:
             return x in vocabulary
-        if stopwords:
-            return x not in stopwords
+        if stopwords and x in stopwords:
+            return False
         if token_regex:
             return token_regex.search(x)
-
         return True
 
     # send through the pipe, `as_tuples` carries the ids forward
