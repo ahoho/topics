@@ -103,11 +103,15 @@ class PhraseMerger:
         with doc.retokenize() as retokenizer:
             # Merge discovered entities / noun chunks. 
             # Ones found via `PipedPhraseMatcher` have label "CUSTOM"
-            ents = tuple(
+            ents = [
                 e for e in doc.ents
                 if self.filter_entities is None or e.label_ in self.filter_entities
-            )
-            phrases = filter_spans(ents + tuple(doc.noun_chunks))
+            ]
+            noun_chunks = []
+            if doc.has_annotation("DEP"):
+                noun_chunks = list(doc.noun_chunks)
+            
+            phrases = filter_spans(ents + noun_chunks)
 
             for phrase in phrases:
                 attrs = {
