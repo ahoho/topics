@@ -104,13 +104,22 @@ class PhraseMerger:
             # Merge discovered entities / noun chunks. 
             # Ones found via `PipedPhraseMatcher` have label "CUSTOM"
             ents = [
-                e for e in doc.ents
-                if self.filter_entities is None or e.label_ in self.filter_entities
+                ent for ent in doc.ents
+                if self.filter_entities is None or ent.label_ in self.filter_entities
             ]
+            custom = set(tok.i for ent in ents for tok in ent if ent.label_ == "CUSTOM")
+
             noun_chunks = []
             if doc.has_annotation("DEP"):
-                noun_chunks = list(doc.noun_chunks)
+                # ensure precedence of CUSTOM phrases
+                noun_chunks = [
+                    noun for noun in doc.noun_chunks
+                    if not any(tok.i in custom for tok in noun)
+                ]
             
+            # eliminate overlapping spans, keeping the longest
+            # NB that, given earlier filtering, CUSTOM phrases should never be subsumed/
+            # broken up
             phrases = filter_spans(ents + noun_chunks)
 
             for phrase in phrases:
