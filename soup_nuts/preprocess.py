@@ -177,6 +177,8 @@ def tokenize_docs(
         vocabulary = set(vocabulary)
         if phrases:
             vocabulary |= set(phrases)
+        if lowercase:
+            vocabulary = {v.lower() for v in vocabulary}
 
     # how to convert `spacy.tokens.Token` to tuples of strings
     def to_string(x: Token) -> Union[tuple[str, str], tuple[str]]:
