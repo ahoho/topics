@@ -107,7 +107,7 @@ class TestTokenization:
             stopwords=[],
         )
 
-    def test_phrase_merging(self):
+    def test_custom_phrase_creation(self):
         # make sure a custom phrase merging works
         self.assert_equal_tokenization(
             ["make sure this custom phrase is found"],
@@ -125,8 +125,8 @@ class TestTokenization:
 
         self.assert_equal_tokenization(
             ["this is a hyphenated-word workaround"],
-            [["this", "is", "a", "hyphenated_word", "workaround"]],
-            phrases=["hyphenated_word"],
+            [["this", "is", "a", "hyphenated-word", "workaround"]],
+            phrases=["hyphenated-word"],
         )
 
     def test_entity_detection(self):
@@ -137,14 +137,16 @@ class TestTokenization:
             detect_entities=True,
         )
 
-        # make sure outer stopwords are REMOVED for detected phrases
+        # make sure outer stopwords are REMOVED for detected phrases,
+        # but inner stopwords are retained
         self.assert_equal_tokenization(
             ["I live in the United States of America"],
             [["I", "live", "in", "United_States_of_America"]],
             detect_entities=True,
-            stopwords=["the"],
+            stopwords=["the", "of"],
         )
 
+    def test_custom_phrase_with_entity_detection(self):
         # make sure custom phrases take precedence over entity detection
         self.assert_equal_tokenization(
             ["I live in the United States of America"],
@@ -177,10 +179,51 @@ class TestTokenization:
             detect_noun_chunks=True,
             stopwords=["a", "the"],
         )
-        # TODO: 
-        # - interaction with custom phrases
-        # - interaction with entity detection
-        # - interaction of all three
+
+    def test_custom_phrase_with_noun_chunk_detection(self):
+        # custom phrases should take precendence over noun detection
+        self.assert_equal_tokenization(
+            ["Eat a red apple in the United States of America"],
+            [["Eat", "a", "red_apple", "in", "the_United_States", "of", "America"]],
+            detect_noun_chunks=True,
+            phrases=["red_apple"],
+        )
+
+        # below is the correct behavior---note that any overlap of a detected noun
+        # chunk with a custom phrase will break the noun chunk detection. there is no
+        # "United_States" here
+        self.assert_equal_tokenization(
+            ["Eat a red apple in the United States of America"],
+            [["Eat", "a_red_apple", "in_the", "United", "States", "of", "America"]],
+            detect_noun_chunks=True,
+            phrases=["in_the"],
+        )
+
+    def test_noun_chunk_with_entity_detection(self):
+        # for combination with entity detection, the longer span is preferred
+        self.assert_equal_tokenization(
+            ["Eat a red apple in the United States of America"],
+            [["Eat", "a_red_apple", "in", "the_United_States_of_America"]],
+            detect_noun_chunks=True,
+            detect_entities=True,
+        )
+
+        self.assert_equal_tokenization(
+            ["N.K. Jemisin writes a great book"],
+            [["N.K._Jemisin", "writes", "a_great_book"]],
+            detect_noun_chunks=True,
+            detect_entities=True,
+        )
+
+    def test_custom_phrase_with_noun_chunk_with_entity_detection(self):
+        # for combination with entity detection, the longer span is preferred
+        self.assert_equal_tokenization(
+            ["Eat a red apple in the United States of America"],
+            [["Eat", "a_red_apple", "in", "the_United_States", "of_America"]],
+            detect_noun_chunks=True,
+            detect_entities=True,
+            phrases=["of_America"],
+        )
 
     def test_phrase_double_counting(self):
         self.assert_equal_tokenization(
@@ -227,8 +270,8 @@ class TestTokenization:
         )
 
         self.assert_equal_tokenization(
-            ["keep: a0q é é10 aé ming!blop okey_dokey hunky-dory drop: 1000 ! , 29@44 %_3 5_5"],
-            [["keep", "a0q", "é", "é10", "aé", "ming!blop", "okey_dokey", "hunky", "dory", "drop"]],
+            ["keep: a0q é é10 aé ming!blop okey_dokey hunky-dory 1000 29@44 %_3 5_5 drop: ! , "],
+            [["keep", "a0q", "é", "é10", "aé", "ming!blop", "okey_dokey", "hunky", "dory", "1000", "29@44", "_", "3", "5_5", "drop"]],
             token_regex=main.token_regex_callback("alphanum"),
         )
 
@@ -245,6 +288,14 @@ class TestTokenization:
                 "1000", "!", ",", "29@44", "%", "_", "3", "$", "1,000", "ming!blop"
             ]],
             token_regex=main.token_regex_callback("all"),
+        )
+
+        # hyphens
+        self.assert_equal_tokenization(
+            ["I feel hunky-dory"],
+            [["I", "feel", "hunky-dory"]],
+            token_regex=main.token_regex_callback("wordlike"),
+            phrases=["hunky-dory"],
         )
 
         # custom regex
