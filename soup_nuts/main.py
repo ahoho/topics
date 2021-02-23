@@ -38,11 +38,13 @@ class OutputFormat(str, Enum):
 def token_regex_callback(value: str) -> re.Pattern:
     if value == "alpha":
         return re.compile("[a-zA-Z]")
+    if value == "alphanum":
+        return re.compile("\w", flags=re.UNICODE)
     if value == "wordlike":
-        return re.compile("^[a-zA-Z0-9-_]*[a-zA-Z][a-zA-Z0-9-_]*$")
+        return re.compile("^[\w-]*[a-zA-Z][\w-]*$", flags=re.UNICODE)
     if value == "all":
         return None
-    return re.compile(value)
+    return re.compile(value, flags=re.UNICODE)
 
 
 def stopwords_callback(value: str) -> Iterable[str]:
@@ -85,7 +87,7 @@ def preprocess(
     # Processing
     lowercase: bool = False,
     token_regex: str = typer.Option(
-        "alpha",
+        "alphanum",
         callback=token_regex_callback,
         help=(
             "How to retain tokens: "
