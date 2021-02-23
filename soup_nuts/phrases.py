@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @Language.factory(
     "match_phrases",
     default_config={
-        "lowercase": False,
+        "case_sensitive": True,
     },
 )
 def make_phrase_matcher(
@@ -25,9 +25,9 @@ def make_phrase_matcher(
     name: str,
     *,
     phrases: Iterable[str],
-    lowercase: bool = False,
+    case_sensitive: bool = True,
 ):
-    return PipedPhraseMatcher(nlp, phrases, lowercase)
+    return PipedPhraseMatcher(nlp, phrases, case_sensitive)
 
 
 class PipedPhraseMatcher:
@@ -35,19 +35,19 @@ class PipedPhraseMatcher:
         self,
         nlp: Language,
         phrases: Iterable[str],
-        lowercase: bool = False,
+        case_sensitive: bool = True,
     ):
         """
         Basically a "custom" NER pipeline relying on a predefined phraselist.
 
         If these are to take priority (in case of span overlap), run before standard NER.
 
-        `lowercase` does not transform the labels, but determines whether we lowercase
+        `case_sensitive` determines whether we lowercase
         when checking for membership in `phrases`
 
         Borrowed from spacy.io/usage/rule-based-matching#phrasematcher
         """
-        self.matcher = PhraseMatcher(nlp.vocab, attr="LOWER" if lowercase else "ORTH")
+        self.matcher = PhraseMatcher(nlp.vocab, attr="ORTH" if case_sensitive else "LOWER")
         patterns = [nlp.make_doc(c.replace("_", " ")) for c in phrases]
         self.matcher.add("phrase_list", patterns)
 
@@ -79,13 +79,18 @@ def make_phrase_merger(
 
 
 class PhraseMerger:
+    """
+    Merge together detected entities and noun phrases discovered earlier in the pipeline
+
+    Either `ner`, `match_phrases`, or [`tagger`, `parser`] (for noun chunks) required.
+    """
     def __init__(
         self,
         stopwords: Optional[list[str]] = None,
         filter_entities: Optional[list[str]] = None,
     ):
         """
-        Stopwords, and entity labels are preferred as sets since lookup is O(1).
+        Stopwords and entity labels are preferred as sets since lookup is O(1).
         """
         self.stopwords = set(stopwords) if stopwords else None
         self.filter_entities = set(filter_entities)
@@ -96,26 +101,32 @@ class PhraseMerger:
         stopword trimming.
         """
         with doc.retokenize() as retokenizer:
-            # Merge discovered entities. Ones found via `PipedPhraseMatcher` have label
-            # "CUSTOM"
-            for ent in doc.ents:
-                if self.filter_entities is None or ent.label_ in self.filter_entities:
-                    attrs = {
-                        "tag": ent.root.tag,
-                        "dep": ent.root.dep,
-                        "ent_type": ent.label,
-                    }
+            # Merge discovered entities / noun chunks. 
+            # Ones found via `PipedPhraseMatcher` have label "CUSTOM"
+            ents = tuple(
+                e for e in doc.ents
+                if self.filter_entities is None or e.label_ in self.filter_entities
+            )
+            phrases = filter_spans(ents + tuple(doc.noun_chunks))
 
-                    # need to trim leading/trailing stopwords
-                    if ent.label_ != "CUSTOM" and self.stopwords is not None:
-                        while ent and ent[0].lower_ in self.stopwords:
-                            ent = ent[1:]
-                        while ent and ent[-1].lower_ in self.stopwords:
-                            ent = ent[:-1]
+            for phrase in phrases:
+                attrs = {
+                    "tag": phrase.root.tag,
+                    "dep": phrase.root.dep,
+                    "ent_type": phrase.label,
+                }
+                # need to trim leading/trailing stopwords
+                if phrase.label_ != "CUSTOM" and self.stopwords is not None:
+                    while phrase and phrase[0].lower_ in self.stopwords:
+                        phrase = phrase[1:]
+                    while phrase and phrase[-1].lower_ in self.stopwords:
+                        phrase = phrase[:-1]
 
-                    if not ent:
-                        continue
-                    retokenizer.merge(ent, attrs=attrs)
+                if not phrase:
+                    continue
+
+                retokenizer.merge(phrase, attrs=attrs)
+
         return doc
 
 
@@ -124,51 +135,72 @@ def detect_phrases(
     passes: int = 1,
     lowercase: bool = False,
     detect_entities: bool = False,
+    detect_noun_chunks: bool = False,
     token_regex: Optional[Pattern] = None,
     min_count: int = 5,
     threshold: float = 10.0,
     max_vocab_size: float = 40_000_000,
     connector_words: Optional[Iterable[str]] = None,
-    phrases: Optional[list[str]] = None,
+    phrases: Optional[Iterable[str]] = None,
+    max_phrase_len: Optional[int] = None,
     n_process: int = 1,
     total_docs: Optional[int] = None,
-) -> dict[str, float]:
+) -> list[str]:
     """
     Pipeline from radimrehurek.com/gensim/models/phrases.html
 
     Designed to be run before preprocessing, to create a list of corpus-specific phrases
-
-    If `connector_words` is "english", will use English connector words from gensim.
     """
-    # This function is self-contained, so we defer imports here (gensim is not used
-    # during preprocessing)
-    from .preprocess import tokenize_docs
+    # This function is self-contained, so we defer imports (gensim is not used
+    # during preprocessing, so preferable to keep it optional)
+    from .preprocess import tokenize_docs, create_pipeline
     from gensim.models import Phrases
+
+    connector_words = frozenset(connector_words) if connector_words else frozenset()
 
     for i in range(passes):
         logger.info(f"On pass {i} of {passes}")
+
+        # reinitialize the generator and spacy model
+        docs = docs_reader()
+        nlp = create_pipeline(
+            model_name="en_core_web_sm",
+            detect_entities=detect_entities,
+            detect_noun_chunks=detect_noun_chunks,
+            case_sensitive=not lowercase,
+            phrases=phrases,
+            phrase_stopwords=connector_words,
+        )
+
         doc_tokens = tokenize_docs(
-            docs=docs_reader(),
+            docs=docs,
+            spacy_model=nlp,
             lowercase=lowercase,
             ngram_range=(1, 1),
-            detect_entities=detect_entities,
             double_count_phrases=False,
             token_regex=token_regex,
             n_process=n_process,
-            phrases=phrases,
             stopwords=None, # do not delete until doing connection below
         )
+        
         phraser = Phrases(
             tqdm((toks for toks, id in doc_tokens), total=total_docs),
+            delimiter="~",
             min_count=min_count,
             threshold=threshold,
             max_vocab_size=max_vocab_size,
             progress_per=float("inf"),
-            connector_words=frozenset(connector_words) if connector_words else [],
+            connector_words=connector_words,
         )
 
         # for future passes
-        phrases = list(phraser.export_phrases().keys())
+        entities_and_noun_chunks = [w for w in phraser.vocab if '_' in w and '~' not in w]
+        detected_phrases = [w.replace("~", "_") for w in phraser.export_phrases()]
+        phrases = detected_phrases + entities_and_noun_chunks
         detect_entities = False  # these will have been added to `phrases`
+        detect_noun_chunks = False
 
-    return dict(sorted(phraser.export_phrases().items(), key=lambda kv: -kv[1]))
+    if max_phrase_len:
+        phrases = [p for p in phrases if p.count("_") <= max_phrase_len]
+
+    return list(set(phrases))

@@ -47,7 +47,7 @@ def token_regex_callback(value: str) -> re.Pattern:
 
 def stopwords_callback(value: str) -> Iterable[str]:
     if value == "english":
-        return list(STOP_WORDS)
+        return STOP_WORDS
     if value == "none":
         return None
     return read_lines(value)
@@ -129,8 +129,14 @@ def preprocess(
         help="Maximum size of the vocabulary. If < 1, share of total vocab to keep",
     ),
     detect_entities: bool = typer.Option(
-        True,
+        False,
         help=("Automatically detect entities with spaCy, `New York` -> `New_York`. "),
+    ),
+    detect_noun_chunks: bool = typer.Option(
+        False,
+        help=(
+            "Automatically detect noun chunks with spaCy, `a butter boy` -> `a_butter_boy`. "
+        ),
     ),
     double_count_phrases: bool = typer.Option(
         True,
@@ -162,7 +168,7 @@ def preprocess(
         callback=stopwords_callback,
         help=(
             "Filepath of stopwords, one word per line. Set to `english` to use spaCy "
-            "list (the default) or `none` to not remove stopwords",
+            "list (the default) or `none` to not remove stopwords"
         )
     ),
     encoding: str = "utf8",
@@ -183,12 +189,21 @@ def preprocess(
             input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding
         )
 
-    if vocabulary and detect_entities:
+    if vocabulary and (detect_entities or detect_noun_chunks):
         logger.warn(
             "You are detecting entities while also specifying an outside vocabulary "
             "this could mean you filter out discovered entities not in your vocabulary."
         )
 
+    if (
+        token_regex.search("word_word") is None and 
+        (detect_entities or detect_noun_chunks or phrases)
+    ):
+        raise ValueError(
+            "Your `token_regex` does not accept tokens with underscores (`_`), but "
+            "`detect_entities`, `detect_noun_chunks` or `phrases` is in use. "
+            "Try updating your regex to accommodate underscores."
+        )
     # TODO: make sure lowercase settings & outside word lists are compatible
     # perhaps by checking to see if any uppercase appear?
 
@@ -210,6 +225,7 @@ def preprocess(
         max_doc_freq=max_doc_freq,
         max_vocab_size=max_vocab_size,
         detect_entities=detect_entities,
+        detect_noun_chunks=detect_noun_chunks,
         double_count_phrases=double_count_phrases,
         token_regex=token_regex,
         vocabulary=vocabulary,
@@ -250,7 +266,7 @@ def detect_phrases(
     ),
     output_dir: Path = typer.Argument(
         ...,
-        help="Output directory. Will save a list of found phrases, ordered by their score.",
+        help="Output directory. Will save a list of found phrases.",
     ),
     input_format: InputFormat = typer.Option(
         InputFormat.text,
@@ -277,6 +293,14 @@ def detect_phrases(
         True,
         help=(
             "Automatically detect entities with spaCy, `New York` -> `New_York`. "
+            "If you plan to set this to `True` during preprocessing, do it now "
+            "and set it to `False` after"
+        ),
+    ),
+    detect_noun_chunks: bool = typer.Option(
+        False,
+        help=(
+            "Automatically detect noun chunks with spaCy, `pinky promise` -> `pinky_promise`. "
             "If you plan to set this to `True` during preprocessing, do it now "
             "and set it to `False` after"
         ),
@@ -318,6 +342,7 @@ def detect_phrases(
             "Must be connected with underscore."
         ),
     ),
+    max_phrase_len: Optional[int] = typer.Option(None, help="Max length in tokens"),
     encoding="utf-8",
     n_process: int = -1,
 ):
@@ -325,7 +350,7 @@ def detect_phrases(
 
     # create a doc-by-doc generator
     if input_format.value == "text":
-        read_docs_ = lambda: read_docs(
+        docs_reader = lambda: read_docs(
             input_path, lines_are_documents, max_doc_size, encoding
         )
 
@@ -334,7 +359,7 @@ def detect_phrases(
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
         if jsonl_text_key is None:
             raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
-        read_docs_ = lambda: read_jsonl(
+        docs_reader = lambda: read_jsonl(
             input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding
         )
 
@@ -346,21 +371,23 @@ def detect_phrases(
     phrases = read_lines(phrases, encoding) if phrases else None
 
     phrases = detect_phrases_(
-        docs_reader=read_docs_,
+        docs_reader=docs_reader,
         passes=passes,
         lowercase=lowercase,
         detect_entities=detect_entities,
+        detect_noun_chunks=detect_noun_chunks,
         token_regex=token_regex,
         min_count=min_count,
         threshold=threshold,
         max_vocab_size=max_vocab_size,
         connector_words=connector_words,
         phrases=phrases,
+        max_phrase_len=max_phrase_len,
         n_process=n_process,
         total_docs=total_docs,
     )
     save_params(params, Path(output_dir, "params.json"))
-    save_lines(phrases.keys(), Path(output_dir, "phrases.json"))
+    save_lines(phrases, Path(output_dir, "phrases.json"))
 
 
 @app.command()

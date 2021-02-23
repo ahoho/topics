@@ -4,6 +4,7 @@ from re import Pattern
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Union, Optional
+from numpy import isin
 
 from sklearn.feature_extraction.text import CountVectorizer
 from scipy import sparse
@@ -81,19 +82,21 @@ def _truncate_doc(
                     
 def docs_to_matrix(
     docs: Iterable[Union[tuple[str, str], str]],
-    as_tuples: bool = True,
     lowercase: bool = False,
     ngram_range: tuple[int, int] = (1, 1),
     min_doc_freq: float = 1.0,
     max_doc_freq: float = 1.0,
     max_vocab_size: Optional[float] = None,
     detect_entities: bool = False,
+    detect_noun_chunks: bool = False,
     double_count_phrases: bool = True,
     token_regex: Optional[Pattern] = None,
-    vocabulary: Optional[list[str]] = None,
-    phrases: Optional[list[str]] = None,
-    stopwords: Optional[list[str]] = None,
+    vocabulary: Optional[Iterable[str]] = None,
+    phrases: Optional[Iterable[str]] = None,
+    stopwords: Optional[Iterable[str]] = None,
     total_docs: Optional[int] = None,
+    spacy_model: Union[Language, str] = 'en_core_web_sm',
+    as_tuples: bool = True,
     n_process: int = 1,
 ) -> tuple[sparse.csr.csr_matrix, dict[str, int], list[str]]:
     """
@@ -101,15 +104,17 @@ def docs_to_matrix(
     """
     doc_tokens = tokenize_docs(
         docs=docs,
-        as_tuples=as_tuples,
         lowercase=lowercase,
         ngram_range=ngram_range,
         detect_entities=detect_entities,
+        detect_noun_chunks=detect_noun_chunks,
         double_count_phrases=double_count_phrases,
         token_regex=token_regex,
         vocabulary=vocabulary,
         phrases=phrases,
         stopwords=stopwords,
+        spacy_model=spacy_model,
+        as_tuples=as_tuples,
         n_process=n_process,
     )
     if not as_tuples: # add ids if none were used
@@ -132,42 +137,56 @@ def docs_to_matrix(
 
 def tokenize_docs(
     docs: Iterable[Union[tuple[str, str], str]],
-    as_tuples: bool = True,
     lowercase: bool = False,
     ngram_range: tuple[int, int] = (1, 1),
     detect_entities: bool = False,
+    detect_noun_chunks: bool = False,
     double_count_phrases: bool = False,
     token_regex: Optional[Pattern] = None,
-    vocabulary: Optional[list[str]] = None,
-    phrases: Optional[list[str]] = None,
-    stopwords: Optional[list[str]] = None,
+    vocabulary: Optional[Iterable[str]] = None,
+    phrases: Optional[Iterable[str]] = None,
+    stopwords: Optional[Iterable[str]] = None,
+    spacy_model: Union[Language, str] = 'en_core_web_sm',
+    as_tuples: bool = True,
     n_process: int = 1,
 ) -> Iterator[Union[tuple[str, str], str]]:
     """
     Tokenize a stream of documents. Tries to be performant by using nlp.pipe 
     """
-    # initialize the spacy model
-    nlp = create_pipeline(
-        lowercase=lowercase,
-        detect_entities=detect_entities,
-        phrases=phrases,
-        stopwords=stopwords,
-    )
+    # initialize the spacy model if it's not already
+    if isinstance(spacy_model, str):
+        spacy_model = create_pipeline(
+            model_name=spacy_model,
+            detect_entities=detect_entities,
+            detect_noun_chunks=detect_noun_chunks,
+            case_sensitive=not lowercase,
+            phrases=phrases,
+            phrase_stopwords=stopwords,
+        )
+    else:
+        any_phrases = detect_entities or detect_noun_chunks or phrases
+        if any_phrases and "merge_phrases" not in spacy_model.pipe_names:
+            logger.warn(
+                "Your `spacy_model` is missing the `merge_phrases` pipe but `phrases`, "
+                "`detect_entities`, or `detect_noun_chunks` is in use. Phrases will not "
+                "be included in tokenization. "
+            )
 
-    # converting `spacy.tokens.Token` to a string
-    def to_string(x: Token) -> Union[tuple[str, str], tuple[str]]:
-        text = x.lower_ if lowercase else x.text
-        if double_count_phrases and " " in text:
-            return (text.replace(' ', '_'), *text.split())
-        else:
-            return (text.replace(" ", "_"), )
-
-    # retain only desirable words
+    # augment vocabulary with any given phrases
     if vocabulary:
         vocabulary = set(vocabulary)
         if phrases:
             vocabulary |= set(phrases)
+
+    # how to convert `spacy.tokens.Token` to tuples of strings
+    def to_string(x: Token) -> Union[tuple[str, str], tuple[str]]:
+        text = x.lower_ if lowercase else x.text
+        if double_count_phrases and " " in text:
+            return (text.replace(" ", "_"), *text.split(" "))
+        else:
+            return (text.replace(" ", "_"), )
     
+    # determine which tokens will be retained
     def to_keep(x: str) -> bool:
         if vocabulary:
             return x in vocabulary
@@ -178,10 +197,10 @@ def tokenize_docs(
         return True
 
     # send through the pipe, `as_tuples` carries the ids forward
-    for doc in nlp.pipe(docs, as_tuples=as_tuples, n_process=n_process):
+    for doc in spacy_model.pipe(docs, as_tuples=as_tuples, n_process=n_process):
         if as_tuples:
             doc, id = doc
-        # If using an outside vocabulary, continue apace
+        
         tokens = [text for tok in doc for text in to_string(tok) if to_keep(text)]
         min_n, max_n = ngram_range
         if max_n == 1:
@@ -196,37 +215,49 @@ def tokenize_docs(
 
 
 def create_pipeline(
-    model: str = "en_core_web_sm",
-    lowercase: bool = False,
+    model_name: str = "en_core_web_sm",
     detect_entities: bool = False,
-    phrases: Optional[list[str]] = None,
-    stopwords: Optional[list[str]] = None,
+    detect_noun_chunks: bool = False,
+    case_sensitive: bool = True,
+    phrases: Optional[Iterable[str]] = None,
+    phrase_stopwords: Optional[Iterable[str]] = None,
 ) -> Language:
     """
     Create the tokenization pipeline. The main changes come with phrase detection.
+
+    `case_sensitive` determines whether `phrases` are matched exactly
+
+    `phrase_stopwords` specifies words (stopword-like) that can exist inside a phrase
+    but not on either side of it: `statue_of_liberty` but not `the_statue_of_liberty`
     """
     nlp = spacy.load(
-        model,
-        exclude=['tok2vec', 'tagger', 'parser', 'attribute_ruler', 'lemmatizer'],
-        disable='ner'
+        model_name,
+        exclude=['lemmatizer'],
+        disable=['ner', 'tagger', 'parser', 'tok2vec', 'attribute_ruler'],
     )
 
     # setup phrase detection
-    any_phrases = detect_entities or phrases
     if phrases:
         # we want custom phrases detected before NER, in case of overlap
         nlp.add_pipe(
             "match_phrases",
-            config={"phrases": phrases, "lowercase": lowercase},
+            config={"phrases": phrases, "case_sensitive": case_sensitive},
             before="ner",
         )
     if detect_entities:
         nlp.enable_pipe("ner")
+    if detect_noun_chunks:
+        nlp.enable_pipe("tok2vec")
+        nlp.enable_pipe("attribute_ruler")
+        nlp.enable_pipe("tagger")
+        nlp.enable_pipe("parser")
+
+    any_phrases = detect_entities or detect_noun_chunks or phrases
     if any_phrases:
         nlp.add_pipe(
             "merge_phrases",
             config={
-                "stopwords": stopwords,
+                "stopwords": list(phrase_stopwords),
                 "filter_entities": ['PERSON', 'FACILITY', 'GPE', 'LOC', 'CUSTOM'],
             }
         )
