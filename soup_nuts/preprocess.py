@@ -257,7 +257,7 @@ def create_pipeline(
         nlp.add_pipe(
             "merge_phrases",
             config={
-                "stopwords": list(phrase_stopwords),
+                "stopwords": list(phrase_stopwords) if phrase_stopwords else None,
                 "filter_entities": ['PERSON', 'FACILITY', 'GPE', 'LOC', 'CUSTOM'],
             }
         )
