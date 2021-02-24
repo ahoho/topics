@@ -93,7 +93,7 @@ class PhraseMerger:
         Stopwords and entity labels are preferred as sets since lookup is O(1).
         """
         self.stopwords = set(stopwords) if stopwords else None
-        self.filter_entities = set(filter_entities)
+        self.filter_entities = set(filter_entities) if filter_entities else None
 
     def __call__(self, doc: Doc) -> Doc:
         """
