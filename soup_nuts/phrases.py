@@ -65,6 +65,7 @@ class PipedPhraseMatcher:
     default_config={
         "stopwords": STOP_WORDS,
         "filter_entities": {"PERSON", "FACILITY", "GPE", "LOC", "CUSTOM"},
+        "max_phrase_len": None,
     },
     retokenizes=True,
 )
@@ -74,8 +75,9 @@ def make_phrase_merger(
     *,
     stopwords: Optional[list[str]] = None,
     filter_entities: Optional[list[str]] = None,
+    max_phrase_len: Optional[int] = None,
 ):
-    return PhraseMerger(stopwords, filter_entities)
+    return PhraseMerger(stopwords, filter_entities, max_phrase_len)
 
 
 class PhraseMerger:
@@ -88,12 +90,14 @@ class PhraseMerger:
         self,
         stopwords: Optional[list[str]] = None,
         filter_entities: Optional[list[str]] = None,
+        max_phrase_len: Optional[int] = None,
     ):
         """
         Stopwords and entity labels are preferred as sets since lookup is O(1).
         """
         self.stopwords = set(stopwords) if stopwords else None
         self.filter_entities = set(filter_entities) if filter_entities else None
+        self.max_phrase_len = max_phrase_len or float("inf")
 
     def __call__(self, doc: Doc) -> Doc:
         """
@@ -120,7 +124,10 @@ class PhraseMerger:
             # eliminate overlapping spans, keeping the longest
             # NB that, given earlier filtering, CUSTOM phrases should never be subsumed/
             # broken up
-            phrases = filter_spans(ents + noun_chunks)
+            phrases = filter_spans([
+                p for p in ents + noun_chunks
+                if p.label_ == "CUSTOM" or len(p) <= self.max_phrase_len
+            ])
 
             for phrase in phrases:
                 attrs = {

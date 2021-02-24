@@ -20,6 +20,7 @@ class TestTokenization:
         detect_entities: bool = False,
         detect_noun_chunks: bool = False,
         double_count_phrases: bool = False,
+        max_phrase_len: Optional[int] = None,
         token_regex: re.Pattern = None,
         vocabulary: Optional[Iterable[str]] = None,
         phrases: Optional[Iterable[str]] = None,
@@ -36,6 +37,7 @@ class TestTokenization:
             detect_entities=detect_entities,
             detect_noun_chunks=detect_noun_chunks,
             double_count_phrases=double_count_phrases,
+            max_phrase_len=max_phrase_len,
             token_regex=token_regex,
             vocabulary=vocabulary,
             phrases=phrases,
@@ -146,6 +148,24 @@ class TestTokenization:
             ["this is a hyphenated-word workaround"],
             [["this", "is", "a", "hyphenated-word", "workaround"]],
             phrases=["hyphenated-word"],
+        )
+
+    def test_max_phrase_length_filtering(self):
+        # note that these are eliminated _entirely_, we don't trim down to the
+        # root or anything may be a TODO
+        self.assert_equal_tokenization(
+            ["10 million friendly Armenian pirates"],
+            [["10", "million", "friendly", "Armenian", "pirates"]],
+            detect_noun_chunks=True,
+            max_phrase_len=2,
+        )
+
+        # custom phrases don't get trimmed
+        self.assert_equal_tokenization(
+            ["10 million friendly Armenian pirates"],
+            [["10_million_friendly_Armenian_pirates"]],
+            phrases=["10_million_friendly_Armenian_pirates"],
+            max_phrase_len=2,
         )
 
     def test_entity_detection(self):
@@ -344,20 +364,48 @@ class TestTokenization:
             lowercase=True
         )
 
-    # def test_full_sentence(self):
-    #     self.assert_equal_tokenization(
-    #         [(
-    #             "According to the Centers for Disease Control and Prevention, 8.1 million "
-    #             "American adults used e-cigarettes every day or some days in 2018, and about "
-    #             "5.4 million American middle and high school students have used "
-    #             "an e- cigarette in the last 30 days."
-    #         )],
-    #         [["to", "compare"]],
-    #         detect_entities=True,
-    #         detect_noun_chunks=True
-    #     )
+    def test_full_sentence(self):
+        doc =  [(
+            "According to the Centers for Disease Control and Prevention, 8.1 million "
+            "American adults used e-cigarettes every day or some days in 2018, and about "
+            "5.4 million American middle and high school students have used "
+            "an e-cigarette in the last 30 days."
+        )]
 
+        # try a real-world example.
+        self.assert_equal_tokenization(
+            doc,
+            [[
+                'According', 'Centers_for_Disease_Control_and_Prevention', 
+                'Centers', 'Disease', 'Control', 'Prevention', 
+                'million', 'American', 'adults', 'e-cigarettes',
+                'day', 'days', 'million', 'American', 'middle', 'high', 'school',
+                 'students', 'e-cigarette', '30_days', 'days'
+            ]],
+            detect_entities=True,
+            detect_noun_chunks=True,
+            double_count_phrases=True,
+            token_regex=main.token_regex_callback("wordlike"),
+            stopwords=main.stopwords_callback("english"),
+            phrases=["e-cigarette", "e-cigarettes"], # hyphens to correct tokenization
+        )
 
+        self.assert_equal_tokenization(
+            doc,
+            [[
+                'According', 'Centers_for_Disease_Control_and_Prevention',
+                '8.1_million_American_adults', 'e-cigarettes', 'day', 'days',
+                '2018', '5.4', 'million', 'American', 'middle', 'high', 'school',
+                'students', 'e-cigarette', '30_days'
+            ]],
+            detect_entities=True,
+            detect_noun_chunks=True,
+            double_count_phrases=False,
+            max_phrase_len=8,
+            token_regex=main.token_regex_callback("alphanum"),
+            stopwords=main.stopwords_callback("english"),
+            phrases=["e-cigarette", "e-cigarettes"], # hyphens to correct tokenization
+        )
 # TODO:
 # class TestDocumentTermMatrix:
 #     def test_matrix_creation(self):

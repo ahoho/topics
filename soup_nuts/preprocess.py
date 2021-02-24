@@ -142,6 +142,7 @@ def tokenize_docs(
     detect_entities: bool = False,
     detect_noun_chunks: bool = False,
     double_count_phrases: bool = False,
+    max_phrase_len: Optional[int] = None,
     token_regex: Optional[Pattern] = None,
     vocabulary: Optional[Iterable[str]] = None,
     phrases: Optional[Iterable[str]] = None,
@@ -162,6 +163,7 @@ def tokenize_docs(
             case_sensitive=not lowercase,
             phrases=phrases,
             phrase_stopwords=stopwords,
+            max_phrase_len=max_phrase_len,
         )
     else:
         any_phrases = detect_entities or detect_noun_chunks or phrases
@@ -226,6 +228,7 @@ def create_pipeline(
     case_sensitive: bool = True,
     phrases: Optional[Iterable[str]] = None,
     phrase_stopwords: Optional[Iterable[str]] = None,
+    max_phrase_len: Optional[int] = None,
     filter_entities: Optional[list[str]] = ['ORG', 'PERSON', 'FACILITY', 'GPE', 'LOC'],
 ) -> Language:
     """
@@ -269,7 +272,8 @@ def create_pipeline(
             config={
                 "stopwords": list(phrase_stopwords) if phrase_stopwords else None,
                 "filter_entities": filter_entities,
-            }
+                "max_phrase_len": max_phrase_len, # will not impact custom phrases
+            },
         )
 
     return nlp
