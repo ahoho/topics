@@ -204,6 +204,9 @@ def tokenize_docs(
             doc, id = doc
         
         tokens = [text for tok in doc for text in to_string(tok) if to_keep(text)]
+        if not tokens:
+            continue
+
         min_n, max_n = ngram_range
         if max_n == 1:
             if as_tuples:

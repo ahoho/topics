@@ -59,6 +59,18 @@ class TestTokenization:
             as_tuples=True,
         )
 
+        # test that we can do multiple documents
+        self.assert_equal_tokenization(
+            [
+                "this is document one",
+                "this is document two",
+            ],
+            [
+                ["this", "is", "document", "one"],
+                ["this", "is", "document", "two"],
+            ]
+        )
+
     def test_lowercasing(self):
         self.assert_equal_tokenization(
             ["This is a grEAt sentence."],
@@ -105,6 +117,13 @@ class TestTokenization:
             ["a the boy"],
             [["a", "the", "boy"]],
             stopwords=[],
+        )
+
+        # it should never return empty lists
+        self.assert_equal_tokenization(
+            ["only stopwords", "not only stopwords"],
+            [["not"]], 
+            stopwords=["only", "stopwords"],
         )
 
     def test_custom_phrase_creation(self):
@@ -314,8 +333,8 @@ class TestTokenization:
 
         self.assert_equal_tokenization(
             ["test Case Sensivity"],
-            [[]],
-            vocabulary=["case", "sensitivity"],
+            [["test"]],
+            vocabulary=["test", "case", "sensitivity"],
         )
 
         self.assert_equal_tokenization(
@@ -324,6 +343,19 @@ class TestTokenization:
             vocabulary=["TEST", "case", "insensitivity"],
             lowercase=True
         )
+
+    # def test_full_sentence(self):
+    #     self.assert_equal_tokenization(
+    #         [(
+    #             "According to the Centers for Disease Control and Prevention, 8.1 million "
+    #             "American adults used e-cigarettes every day or some days in 2018, and about "
+    #             "5.4 million American middle and high school students have used "
+    #             "an e- cigarette in the last 30 days."
+    #         )],
+    #         [["to", "compare"]],
+    #         detect_entities=True,
+    #         detect_noun_chunks=True
+    #     )
 
 
 # TODO:
