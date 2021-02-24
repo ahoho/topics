@@ -226,6 +226,7 @@ def create_pipeline(
     case_sensitive: bool = True,
     phrases: Optional[Iterable[str]] = None,
     phrase_stopwords: Optional[Iterable[str]] = None,
+    filter_entities: Optional[list[str]] = ['ORG', 'PERSON', 'FACILITY', 'GPE', 'LOC'],
 ) -> Language:
     """
     Create the tokenization pipeline. The main changes come with phrase detection.
@@ -249,6 +250,10 @@ def create_pipeline(
             config={"phrases": phrases, "case_sensitive": case_sensitive},
             before="ner",
         )
+        # if it is None, then all entities are kept anyway in `merge_phrases`
+        if filter_entities is not None:
+            filter_entities.append("CUSTOM")
+
     if detect_entities:
         nlp.enable_pipe("ner")
     if detect_noun_chunks:
@@ -263,7 +268,7 @@ def create_pipeline(
             "merge_phrases",
             config={
                 "stopwords": list(phrase_stopwords) if phrase_stopwords else None,
-                "filter_entities": ['PERSON', 'FACILITY', 'GPE', 'LOC', 'CUSTOM'],
+                "filter_entities": filter_entities,
             }
         )
 
