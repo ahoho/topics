@@ -16,8 +16,7 @@ spacy = "^3.0"
 scikit-learn = "^0.24"
 tqdm = "*"
 typer = {extras = ["all"], version = "^0.3.2"}
-# once 4.0 is out, will update
-gensim = { git = "https://github.com/RaRe-Technologies/gensim.git", rev = "cfc9e959b6b742adcc618ac58cf5f8e4a150d08f", optional = true}
+gensim = {version = "^4.0", optional = true}
 
 [tool.poetry.extras]
 gensim = ["gensim"]
