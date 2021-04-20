@@ -486,9 +486,3 @@ def detect_phrases(
     )
     save_params(params, Path(output_dir, "params.json"))
     save_lines(phrases, Path(output_dir, "phrases.json"))
-
-
-@models_app.command("etm")
-def run_etm():
-    pass
-
