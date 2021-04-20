@@ -11,7 +11,6 @@ from spacy.lang.en.stop_words import STOP_WORDS
 
 from .preprocess import read_docs, read_jsonl, docs_to_matrix
 from .phrases import detect_phrases as detect_phrases_
-from .models import app as models_app
 from .utils import (
     get_total_lines,
     read_lines,
@@ -22,7 +21,6 @@ from .utils import (
 )
 
 app = typer.Typer()
-app.add_typer(models_app)
 
 logger = logging.getLogger(__name__)
 
