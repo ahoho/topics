@@ -92,7 +92,8 @@ def docs_to_matrix(
     double_count_phrases: bool = True,
     max_phrase_len: Optional[int] = None,
     token_regex: Optional[Pattern] = None,
-    min_chars: Optional[int] = None,
+    min_chars: Optional[int] = 0,
+    lemmatize: bool = False,
     vocabulary: Optional[Iterable[str]] = None,
     phrases: Optional[Iterable[str]] = None,
     stopwords: Optional[Iterable[str]] = None,
@@ -114,6 +115,7 @@ def docs_to_matrix(
         max_phrase_len=max_phrase_len,
         token_regex=token_regex,
         min_chars=min_chars,
+        lemmatize=lemmatize,
         vocabulary=vocabulary,
         phrases=phrases,
         stopwords=stopwords,
@@ -148,7 +150,8 @@ def tokenize_docs(
     double_count_phrases: bool = False,
     max_phrase_len: Optional[int] = None,
     token_regex: Optional[Pattern] = None,
-    min_chars: Optional[int] = None,
+    min_chars: Optional[int] = 0,
+    lemmatize: bool = False,
     vocabulary: Optional[Iterable[str]] = None,
     phrases: Optional[Iterable[str]] = None,
     stopwords: Optional[Iterable[str]] = None,
@@ -166,6 +169,7 @@ def tokenize_docs(
             detect_entities=detect_entities,
             detect_noun_chunks=detect_noun_chunks,
             case_sensitive=not lowercase,
+            lemmatize=lemmatize,
             phrases=phrases,
             phrase_stopwords=stopwords,
             max_phrase_len=max_phrase_len,
@@ -190,6 +194,9 @@ def tokenize_docs(
     # how to convert `spacy.tokens.Token` to tuples of strings
     def to_string(x: Token) -> Union[tuple[str, str], tuple[str]]:
         text = x.lower_ if lowercase else x.text
+        if lemmatize and " " not in text:
+            text = x.lemma_.lower() if lowercase else x.lemma_
+
         if double_count_phrases and " " in text:
             return (text.replace(" ", "_"), *text.split(" "))
         else:
@@ -233,6 +240,7 @@ def create_pipeline(
     detect_entities: bool = False,
     detect_noun_chunks: bool = False,
     case_sensitive: bool = True,
+    lemmatize: bool = False,
     phrases: Optional[Iterable[str]] = None,
     phrase_stopwords: Optional[Iterable[str]] = None,
     max_phrase_len: Optional[int] = None,
@@ -248,11 +256,16 @@ def create_pipeline(
     """
     nlp = spacy.load(
         model_name,
-        exclude=['lemmatizer'],
-        disable=['ner', 'tagger', 'parser', 'tok2vec', 'attribute_ruler'],
+        disable=['lemmatizer', 'ner', 'tagger', 'parser', 'tok2vec', 'attribute_ruler'],
     )
 
     # setup phrase detection
+    if lemmatize:
+        nlp.enable_pipe("tok2vec")
+        nlp.enable_pipe("tagger")
+        nlp.enable_pipe("attribute_ruler")
+        nlp.enable_pipe("lemmatizer")
+
     if phrases:
         # we want custom phrases detected before NER, in case of overlap
         nlp.add_pipe(
@@ -268,8 +281,8 @@ def create_pipeline(
         nlp.enable_pipe("ner")
     if detect_noun_chunks:
         nlp.enable_pipe("tok2vec")
-        nlp.enable_pipe("attribute_ruler")
         nlp.enable_pipe("tagger")
+        nlp.enable_pipe("attribute_ruler")
         nlp.enable_pipe("parser")
 
     any_phrases = detect_entities or detect_noun_chunks or phrases

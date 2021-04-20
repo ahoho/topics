@@ -180,6 +180,18 @@ def preprocess(
     max_doc_size: Optional[int] = typer.Option(
         None, min=0, help="Maximum document size in whitespace-delimited tokens"
     ),
+    lemmatize: bool = typer.Option(
+        False,
+        help=(
+            "Lemmatize words using the spaCy model, `I am happy` -> `I be happy`. "
+            "Will _not_ lemmatize terms inside a phrase, so "
+            "`I support voting rights` -> `I support voting_rights`. "
+            "It also supersedes vocabulary filtering, so having `words` in `vocabulary` "
+            "will mean that the lemmatized `word` is not included (this behavior subject to change). "
+            "Finally, note that spaCy is not infallible! "
+            "e.g., it will lemmatize `taxes`->`taxis` instead of `tax`."
+        ),
+    ),
     # External files
     vocabulary: Optional[Path] = typer.Option(
         None,
@@ -270,6 +282,7 @@ def preprocess(
         max_phrase_len=max_phrase_len,
         token_regex=token_regex,
         min_chars=min_chars,
+        lemmatize=lemmatize,
         vocabulary=vocabulary,
         phrases=phrases,
         stopwords=stopwords,
@@ -291,6 +304,7 @@ def preprocess(
             double_count_phrases=double_count_phrases, # TODO: may need to make false?
             token_regex=token_regex,
             min_chars=min_chars,
+            lemmatize=lemmatize,
             vocabulary=learned_vocab,
             phrases=learned_phrases,
             total_docs=total_val,
@@ -305,6 +319,7 @@ def preprocess(
             double_count_phrases=double_count_phrases, # TODO: may need to make false?
             token_regex=token_regex,
             min_chars=min_chars,
+            lemmatize=lemmatize,
             vocabulary=learned_vocab,
             phrases=learned_phrases,
             total_docs=total_test,

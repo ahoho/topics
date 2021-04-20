@@ -22,6 +22,8 @@ class TestTokenization:
         double_count_phrases: bool = False,
         max_phrase_len: Optional[int] = None,
         token_regex: re.Pattern = None,
+        min_chars: int = 0,
+        lemmatize: bool = False,
         vocabulary: Optional[Iterable[str]] = None,
         phrases: Optional[Iterable[str]] = None,
         stopwords: Optional[Iterable[str]]  = None,
@@ -39,6 +41,8 @@ class TestTokenization:
             double_count_phrases=double_count_phrases,
             max_phrase_len=max_phrase_len,
             token_regex=token_regex,
+            min_chars=min_chars,
+            lemmatize=lemmatize,
             vocabulary=vocabulary,
             phrases=phrases,
             stopwords=stopwords,
@@ -342,6 +346,22 @@ class TestTokenization:
             ["1000 a+ $999"],
             [["1000", "999"]],
             token_regex=re.compile("[0-9]"),
+        )
+
+
+    def test_lemmatization(self):
+        self.assert_equal_tokenization(
+            ["A bear eats in the woods"],
+            [["a", "bear", "eat", "in", "the", "wood"]],
+            lemmatize=True
+        )
+
+        # lemmatization should not apply to phrases
+        self.assert_equal_tokenization(
+            ["A bear eats in the woods"],
+            [["A_bear", "eat", "in", "the_woods"]],
+            lemmatize=True,
+            detect_noun_chunks=True,
         )
 
     def test_vocabulary_filtering(self):
