@@ -11,6 +11,7 @@ from spacy.lang.en.stop_words import STOP_WORDS
 
 from .preprocess import read_docs, read_jsonl, docs_to_matrix
 from .phrases import detect_phrases as detect_phrases_
+from .models import app as models_app
 from .utils import (
     get_total_lines,
     read_lines,
@@ -21,9 +22,9 @@ from .utils import (
 )
 
 app = typer.Typer()
+app.add_typer(models_app)
 
 logger = logging.getLogger(__name__)
-
 
 class InputFormat(str, Enum):
     text: str = "text"
@@ -55,15 +56,31 @@ def stopwords_callback(value: str) -> Iterable[str]:
     return read_lines(value)
 
 
-@app.command(help="Preprocess documents to a document-term matrix.")
+@app.command(help="Preprocess documents to a document-term matrix.", )
 def preprocess(
     input_path: list[Path] = typer.Argument(
         ...,
         exists=True,
-        help="File(s) containing raw text (works with glob patterns)",
+        help="File(s) containing text data (works with glob patterns)",
     ),
     output_dir: Path = typer.Argument(
         ..., help="Output directory. Will save vocabulary and the document-term matrix."
+    ),
+    val_path: Optional[list[Path]] = typer.Argument(
+        [],
+        exists=True,
+        help=(
+            "Optional file(s) containing raw text to use as validation data. "
+            "Will rely on vocabulary from the training data."
+        ),
+    ),
+    test_path: Optional[list[Path]] = typer.Argument(
+        [],
+        exists=True,
+        help=(
+            "Optional file(s) containing raw text to use as test data. "
+            "Will rely on vocabulary from the training data."
+        ),
     ),
     input_format: InputFormat = typer.Option(
         InputFormat.text,
@@ -98,6 +115,7 @@ def preprocess(
             "other values will be interpreted as regex."
         ),
     ),
+    min_chars: int = typer.Option(2, help="Minimum number of characters per word."),
     ngram_range: tuple[int, int] = typer.Option(
         (1, 1),
         help=(
@@ -132,12 +150,14 @@ def preprocess(
     ),
     detect_entities: bool = typer.Option(
         False,
-        help=("Automatically detect entities with spaCy, `New York` -> `New_York`. "),
+        help="Automatically detect entities with spaCy, `New York` -> `New_York`. "
     ),
     detect_noun_chunks: bool = typer.Option(
         False,
         help=(
-            "Automatically detect noun chunks with spaCy, `a butter boy` -> `a_butter_boy`. "
+            "Automatically detect noun chunks with spaCy "
+            "`8.1 million American adults` -> `8.1_million_American_adults` "
+            "(will slow down processing)"
         ),
     ),
     double_count_phrases: bool = typer.Option(
@@ -145,6 +165,16 @@ def preprocess(
         help=(
             "Collocations are included alongside constituent unigrams, "
             "`New York -> `New York New_York`. Anecdotally forms more interpretable topics."
+        ),
+    ),
+    max_phrase_len: Optional[int] = typer.Option(
+        None,
+        min=2,
+        help=(
+            "Maximum length of *detected* phrases in words (not applied to those in `--phrases`) "
+            "Currently, this is 'all or nothing': a long phrase will be merely processed "
+            "as its component tokens, not reduced. Use `detect-phrases` command for "
+            "more fine-grained control"
         ),
     ),
     max_doc_size: Optional[int] = typer.Option(
@@ -178,18 +208,23 @@ def preprocess(
 ):
     params = locals()
 
+    if set(input_path) & set(val_path) & set(test_path):
+        raise ValueError("There is overlap between the train, test, and validation paths")
+
     # create a doc-by-doc generator
     if input_format.value == "text":
         docs = read_docs(input_path, lines_are_documents, max_doc_size, encoding)
-
+        val_docs = read_docs(val_path, lines_are_documents, max_doc_size, encoding)
+        test_docs = read_docs(test_path, lines_are_documents, max_doc_size, encoding)
+        
     if input_format.value == "jsonl":
         if not lines_are_documents:
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
         if jsonl_text_key is None:
             raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
-        docs = read_jsonl(
-            input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding
-        )
+        docs = read_jsonl(input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
+        val_docs = read_jsonl(val_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
+        test_docs = read_jsonl(test_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
 
     if vocabulary and (detect_entities or detect_noun_chunks):
         logger.warn(
@@ -210,16 +245,19 @@ def preprocess(
     # perhaps by checking to see if any uppercase appear?
 
     # retrieve the total number of documents for progress bars
-    total_docs = len(input_path)
+    total_docs, total_val, total_test = len(input_path), len(val_path), len(test_path)
     if lines_are_documents:
         total_docs = get_total_lines(input_path, encoding=encoding)
+        total_val = get_total_lines(val_path, encoding=encoding)
+        total_test = get_total_lines(test_path, encoding=encoding)
 
     # load external wordlist files
     vocabulary = read_lines(vocabulary, encoding) if vocabulary else None
     phrases = read_lines(phrases, encoding) if phrases else None
 
     # create the document-term matrix
-    dtm, vocab, ids = docs_to_matrix(
+    logger.info("Processing train data")
+    dtm, terms, ids = docs_to_matrix(
         docs,
         lowercase=lowercase,
         ngram_range=ngram_range,
@@ -229,7 +267,9 @@ def preprocess(
         detect_entities=detect_entities,
         detect_noun_chunks=detect_noun_chunks,
         double_count_phrases=double_count_phrases,
+        max_phrase_len=max_phrase_len,
         token_regex=token_regex,
+        min_chars=min_chars,
         vocabulary=vocabulary,
         phrases=phrases,
         stopwords=stopwords,
@@ -237,14 +277,57 @@ def preprocess(
         n_process=n_process,
     )
 
+    if val_path or test_path:
+        # if an outside vocab was used, we keep that
+        learned_vocab = vocabulary or [v for v in terms if "_" not in v]
+        # on second pass, keep only _learned_ phrases
+        learned_phrases = [v for v in terms if "_" in v and v not in (vocabulary or [])]
+    if val_path:
+        logger.info("Processing validation data")
+        val_dtm, _, val_ids = docs_to_matrix(
+            val_docs,
+            lowercase=lowercase,
+            ngram_range=ngram_range,
+            double_count_phrases=double_count_phrases, # TODO: may need to make false?
+            token_regex=token_regex,
+            min_chars=min_chars,
+            vocabulary=learned_vocab,
+            phrases=learned_phrases,
+            total_docs=total_val,
+            n_process=n_process,
+        )
+    if test_path:
+        logger.info("Processing test data")
+        test_dtm, _, test_ids = docs_to_matrix(
+            test_docs,
+            lowercase=lowercase,
+            ngram_range=ngram_range,
+            double_count_phrases=double_count_phrases, # TODO: may need to make false?
+            token_regex=token_regex,
+            min_chars=min_chars,
+            vocabulary=learned_vocab,
+            phrases=learned_phrases,
+            total_docs=total_test,
+            n_process=n_process,
+        )
     # save out
     save_params(params, Path(output_dir, "params.json"))
     if output_format == "sparse":
-        sparse.save_npz(Path(output_dir, "dtm.npz"), dtm)
-        save_json(vocab, Path(output_dir, "vocab.json"), indent=2)
-        save_json(ids, Path(output_dir, "ids.json"), indent=2)
+        sparse.save_npz(Path(output_dir, "train.dtm.npz"), dtm)
+        save_json(terms, Path(output_dir, "train.vocab.json"), indent=2)
+        save_json(ids, Path(output_dir, "train.ids.json"), indent=2)
+        if val_path:
+            sparse.save_npz(Path(output_dir, "val.dtm.npz"), val_dtm)
+            save_json(val_ids, Path(output_dir, "val.ids.json"), indent=2)
+        if test_path:
+            sparse.save_npz(Path(output_dir, "test.dtm.npz"), val_dtm)
+            save_json(test_ids, Path(output_dir, "test.ids.json"), indent=2)
     if output_format == "jsonl":
-        save_dtm_as_jsonl(dtm, vocab, ids, Path(output_dir, "data.jsonl"))
+        save_dtm_as_jsonl(dtm, terms, ids, Path(output_dir, "train.data.jsonl"))
+        if val_path:
+            save_dtm_as_jsonl(val_dtm, terms, val_ids, Path(output_dir, "val.data.jsonl"))
+        if test_path:
+            save_dtm_as_jsonl(test_dtm, terms, test_ids, Path(output_dir, "test.data.jsonl"))
 
 
 def connector_words_callback(value: str) -> Iterable[str]:
@@ -392,6 +475,7 @@ def detect_phrases(
     save_lines(phrases, Path(output_dir, "phrases.json"))
 
 
-@app.command()
-def run_model():
+@models_app.command("etm")
+def run_etm():
     pass
+

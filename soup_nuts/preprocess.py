@@ -90,7 +90,9 @@ def docs_to_matrix(
     detect_entities: bool = False,
     detect_noun_chunks: bool = False,
     double_count_phrases: bool = True,
+    max_phrase_len: Optional[int] = None,
     token_regex: Optional[Pattern] = None,
+    min_chars: Optional[int] = None,
     vocabulary: Optional[Iterable[str]] = None,
     phrases: Optional[Iterable[str]] = None,
     stopwords: Optional[Iterable[str]] = None,
@@ -109,7 +111,9 @@ def docs_to_matrix(
         detect_entities=detect_entities,
         detect_noun_chunks=detect_noun_chunks,
         double_count_phrases=double_count_phrases,
+        max_phrase_len=max_phrase_len,
         token_regex=token_regex,
+        min_chars=min_chars,
         vocabulary=vocabulary,
         phrases=phrases,
         stopwords=stopwords,
@@ -144,6 +148,7 @@ def tokenize_docs(
     double_count_phrases: bool = False,
     max_phrase_len: Optional[int] = None,
     token_regex: Optional[Pattern] = None,
+    min_chars: Optional[int] = None,
     vocabulary: Optional[Iterable[str]] = None,
     phrases: Optional[Iterable[str]] = None,
     stopwords: Optional[Iterable[str]] = None,
@@ -194,6 +199,8 @@ def tokenize_docs(
     def to_keep(x: str) -> bool:
         if vocabulary:
             return x in vocabulary
+        if min_chars and len(x) <= min_chars:
+            return False
         if stopwords and x in stopwords:
             return False
         if token_regex:

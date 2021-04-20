@@ -221,6 +221,6 @@ def detect_phrases(
         detect_noun_chunks = False
 
     if max_phrase_len:
-        phrases = [p for p in phrases if p.count("_") <= max_phrase_len]
+        phrases = [p for p in phrases if p.count("_") + 1 <= max_phrase_len]
 
     return list(set(phrases))
