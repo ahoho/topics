@@ -1,9 +1,9 @@
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 import logging
 import re
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Iterable, Union
+from typing import Optional, Iterable
 
 import typer
 from scipy import sparse
@@ -12,6 +12,7 @@ from spacy.lang.en.stop_words import STOP_WORDS
 from .preprocess import read_docs, read_jsonl, docs_to_matrix
 from .phrases import detect_phrases as detect_phrases_
 from .utils import (
+    expand_paths,
     get_total_lines,
     read_lines,
     save_lines,
@@ -23,6 +24,7 @@ from .utils import (
 app = typer.Typer()
 
 logger = logging.getLogger(__name__)
+
 
 class InputFormat(str, Enum):
     text: str = "text"
@@ -54,26 +56,27 @@ def stopwords_callback(value: str) -> Iterable[str]:
     return read_lines(value)
 
 
-@app.command(help="Preprocess documents to a document-term matrix.", )
+@app.command(help="Preprocess documents to a document-term matrix.")
 def preprocess(
-    input_path: list[Path] = typer.Argument(
+    input_path: Optional[Path] = typer.Argument(
         ...,
         exists=True,
-        help="File(s) containing text data (works with glob patterns)",
+        help="File(s) containing text data (works with glob patterns if quoted)",
     ),
     output_dir: Path = typer.Argument(
-        ..., help="Output directory. Will save vocabulary and the document-term matrix."
+        ...,
+        help="Output directory. Will save vocabulary and the document-term matrix.",
     ),
-    val_path: Optional[list[Path]] = typer.Option(
-        [],
+    val_path: Optional[Path] = typer.Option(
+        None,
         exists=True,
         help=(
             "Optional file(s) containing raw text to use as validation data. "
             "Will rely on vocabulary from the training data."
         ),
     ),
-    test_path: Optional[list[Path]] = typer.Option(
-        [],
+    test_path: Optional[Path] = typer.Option(
+        None,
         exists=True,
         help=(
             "Optional file(s) containing raw text to use as test data. "
@@ -218,7 +221,13 @@ def preprocess(
 ):
     params = locals()
 
-    if set(input_path) & set(val_path) & set(test_path):
+    input_path = expand_paths(input_path)
+    val_path = expand_paths(val_path) if val_path else []
+    test_path = expand_paths(test_path) if test_path else []
+
+    Path(output_dir).mkdir(exist_ok=True, parents=True)
+
+    if set(input_path) & set(val_path) or set(input_path) & set(test_path) or set(val_path) & set(test_path):
         raise ValueError("There is overlap between the train, test, and validation paths")
 
     # create a doc-by-doc generator
@@ -357,14 +366,14 @@ def connector_words_callback(value: str) -> Iterable[str]:
 
 @app.command(help="Learn phrases (e.g., `New_York`) from the data.")
 def detect_phrases(
-    input_path: list[Path] = typer.Argument(
+    input_path: Optional[Path] = typer.Argument(
         ...,
         exists=True,
-        help="File(s) containing raw text (works with glob patterns)",
+        help="File(s) containing text data (works with glob patterns if quoted)",
     ),
     output_dir: Path = typer.Argument(
         ...,
-        help="Output directory. Will save a list of found phrases.",
+        help="Output directory. Will save vocabulary and the document-term matrix.",
     ),
     input_format: InputFormat = typer.Option(
         InputFormat.text,
@@ -446,6 +455,8 @@ def detect_phrases(
 ):
     params = locals()
 
+    input_path = expand_paths(input_path)
+
     # create a doc-by-doc generator
     if input_format.value == "text":
         docs_reader = lambda: read_docs(
@@ -486,3 +497,7 @@ def detect_phrases(
     )
     save_params(params, Path(output_dir, "params.json"))
     save_lines(phrases, Path(output_dir, "phrases.json"))
+
+
+if __name__ == "__main__":
+    app()

@@ -13,6 +13,16 @@ from typer.models import NoneType
 logger = logging.getLogger(__name__)
 
 
+def expand_paths(path_or_pattern):
+    """
+    Make a list of paths from a glob pattern
+    From https://stackoverflow.com/a/51108375
+    """
+    path = Path(path_or_pattern).expanduser()
+    parts = path.parts[1:] if path.is_absolute() else path.parts
+    return list(Path(path.root).glob(str(Path("").joinpath(*parts))))
+
+
 def get_total_lines(paths: list[Union[Path, str]], encoding: str = "utf-8") -> int:
     """
     Get the total number of lines (read: documents) to process
