@@ -99,12 +99,16 @@ def docs_to_matrix(
     stopwords: Optional[Iterable[str]] = None,
     total_docs: Optional[int] = None,
     spacy_model: Union[Language, str] = 'en_core_web_sm',
+    retain_text: bool = False,
     as_tuples: bool = True,
     n_process: int = 1,
 ) -> tuple[sparse.csr.csr_matrix, dict[str, int], list[str]]:
     """
     Create a document-term matrix for a list of documents
     """
+
+    logger.info("Processing documents...")
+
     doc_tokens = tokenize_docs(
         docs=docs,
         lowercase=lowercase,
@@ -125,6 +129,11 @@ def docs_to_matrix(
     )
     if not as_tuples: # add ids if none were used
         doc_tokens = ((doc, i) for i, doc in enumerate(doc_tokens))
+    if retain_text:
+        # Store in memory as list. TODO: for large corpora, re-initialize the generator
+        doc_tokens = [doc for doc in tqdm(doc_tokens, total=total_docs)]
+    else:
+        doc_tokens = tqdm(doc_tokens, total=total_docs)
 
     # CountVectorizer is considerably faster than gensim for creating the doc-term mtx
     cv = CountVectorizerWithID(
@@ -134,11 +143,15 @@ def docs_to_matrix(
         max_df=float(max_doc_freq) if max_doc_freq <=1 else int(max_doc_freq),
         max_features=max_vocab_size,#TODO, fix how we describe this param
     )
-    logger.info("Processing documents...")
-    dtm = cv.fit_transform(tqdm(doc_tokens, total=total_docs))
-    vocab = dict(sorted(cv.vocabulary_.items(), key=lambda x: x[1]))
+    dtm = cv.fit_transform(doc_tokens)
     ids = cv.ids
-    return dtm, vocab, ids
+    if retain_text:
+        doc_tokens = [
+            " ".join(w for w in doc if w in vocab)
+            for doc, i in doc_tokens
+        ]
+        assert(len(doc_tokens) == dtm.shape[0])
+    return dtm, vocab, ids, doc_tokens
             
 
 def tokenize_docs(

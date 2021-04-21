@@ -90,18 +90,21 @@ def preprocess(
     output_format: OutputFormat = typer.Option(
         OutputFormat.sparse,
         help=(
-            "Format in which to save the document-term matrix. "
+            "Format(s) in which to save the document-term matrix: "
+            "any mix of `sparse`, `jsonl`, and `text. "
             "For `jsonl`, each row contains the document's id and word counts, "
             "e.g. {'id': '0001', 'counts': {'apple': 2, 'cake': 1}. "
             "`sparse` is a `scipy.sparse.csr.csr_matrix`, vocab & ids in separate files"
         ),
     ),
+    output_text: bool = typer.Option(False, help="Also output processed text, in order"),
     lines_are_documents: bool = typer.Option(
         True,
         help="Treat each line in a file as a document (else, each file is a document). ",
     ),
     jsonl_text_key: Optional[str] = None,
     jsonl_id_key: Optional[str] = None,
+
     # Processing
     lowercase: bool = False,
     token_regex: str = typer.Option(
@@ -276,7 +279,7 @@ def preprocess(
 
     # create the document-term matrix
     logger.info("Processing train data")
-    dtm, terms, ids = docs_to_matrix(
+    dtm, terms, ids, text = docs_to_matrix(
         docs,
         lowercase=lowercase,
         ngram_range=ngram_range,
@@ -294,6 +297,7 @@ def preprocess(
         phrases=phrases,
         stopwords=stopwords,
         total_docs=total_docs,
+        retain_text=output_text,
         n_process=n_process,
     )
 
@@ -304,7 +308,7 @@ def preprocess(
         learned_phrases = [v for v in terms if "_" in v and v not in (vocabulary or [])]
     if val_path:
         logger.info("Processing validation data")
-        val_dtm, _, val_ids = docs_to_matrix(
+        val_dtm, _, val_ids, val_text = docs_to_matrix(
             val_docs,
             lowercase=lowercase,
             ngram_range=ngram_range,
@@ -315,11 +319,12 @@ def preprocess(
             vocabulary=learned_vocab,
             phrases=learned_phrases,
             total_docs=total_val,
+            retain_text=output_text,
             n_process=n_process,
         )
     if test_path:
         logger.info("Processing test data")
-        test_dtm, _, test_ids = docs_to_matrix(
+        test_dtm, _, test_ids, test_text = docs_to_matrix(
             test_docs,
             lowercase=lowercase,
             ngram_range=ngram_range,
@@ -330,11 +335,13 @@ def preprocess(
             vocabulary=learned_vocab,
             phrases=learned_phrases,
             total_docs=total_test,
+            retain_text=output_text,
             n_process=n_process,
         )
     # save out
     save_params(params, Path(output_dir, "params.json"))
-    if output_format == "sparse":
+
+    if output_format.value == "sparse":
         sparse.save_npz(Path(output_dir, "train.dtm.npz"), dtm)
         save_json(terms, Path(output_dir, "train.vocab.json"), indent=2)
         save_json(ids, Path(output_dir, "train.ids.json"), indent=2)
@@ -344,12 +351,18 @@ def preprocess(
         if test_path:
             sparse.save_npz(Path(output_dir, "test.dtm.npz"), val_dtm)
             save_json(test_ids, Path(output_dir, "test.ids.json"), indent=2)
-    if output_format == "jsonl":
+    if output_format.value == "jsonl":
         save_dtm_as_jsonl(dtm, terms, ids, Path(output_dir, "train.data.jsonl"))
         if val_path:
             save_dtm_as_jsonl(val_dtm, terms, val_ids, Path(output_dir, "val.data.jsonl"))
         if test_path:
             save_dtm_as_jsonl(test_dtm, terms, test_ids, Path(output_dir, "test.data.jsonl"))
+    if output_text:
+        save_lines(text, Path(output_dir, "train.txt"))
+        if val_path:
+            save_lines(val_text, Path(output_dir, "val.txt"))
+        if test_path:
+            save_lines(test_text, Path(output_dir, "test.txt"))
 
 
 def connector_words_callback(value: str) -> Iterable[str]:
