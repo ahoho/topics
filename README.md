@@ -18,6 +18,12 @@ Then from the repository root, run
 $ poetry install --extras gensim
 ```
 
+Finally, you will need to download the spaCy models with
+
+```console
+$ python -m spacy download en_core_web_sm
+```
+
 ## CLI Instructions
 
 **Usage**:

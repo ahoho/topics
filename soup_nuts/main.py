@@ -64,7 +64,7 @@ def preprocess(
     output_dir: Path = typer.Argument(
         ..., help="Output directory. Will save vocabulary and the document-term matrix."
     ),
-    val_path: Optional[list[Path]] = typer.Argument(
+    val_path: Optional[list[Path]] = typer.Option(
         [],
         exists=True,
         help=(
@@ -72,7 +72,7 @@ def preprocess(
             "Will rely on vocabulary from the training data."
         ),
     ),
-    test_path: Optional[list[Path]] = typer.Argument(
+    test_path: Optional[list[Path]] = typer.Option(
         [],
         exists=True,
         help=(
