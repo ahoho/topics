@@ -144,6 +144,7 @@ def docs_to_matrix(
         max_features=max_vocab_size,#TODO, fix how we describe this param
     )
     dtm = cv.fit_transform(doc_tokens)
+    vocab = {k: int(v) for k, v in sorted(cv.vocabulary_.items(), key=lambda x: x[1])}
     ids = cv.ids
     if retain_text:
         doc_tokens = [
