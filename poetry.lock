@@ -88,6 +88,21 @@ optional = true
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "en-core-web-sm"
+version = "3.0.0"
+description = "English pipeline optimized for CPU. Components: tok2vec, tagger, parser, senter, ner, attribute_ruler, lemmatizer."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+spacy = ">=3.0.0,<3.1.0"
+
+[package.source]
+type = "url"
+url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz"
+
+[[package]]
 name = "gensim"
 version = "4.0.1"
 description = "Python framework for fast Vector Space Modelling"
@@ -519,7 +534,7 @@ gensim = ["gensim"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e123eb4ec444e67bcbc3ec4fbbdb7058f1e1394ccf95813af66d8354a4b861fe"
+content-hash = "ded11ed0ae513a6497224d7ede9398695e10ecd5b4f7e29c16e8e068a71434db"
 
 [metadata.files]
 atomicwrites = [
@@ -617,6 +632,7 @@ cython = [
     {file = "Cython-0.29.21-py2.py3-none-any.whl", hash = "sha256:5c4276fdcbccdf1e3c1756c7aeb8395e9a36874fa4d30860e7694f43d325ae13"},
     {file = "Cython-0.29.21.tar.gz", hash = "sha256:e57acb89bd55943c8d8bf813763d20b9099cc7165c0f16b707631a7654be9cad"},
 ]
+en-core-web-sm = []
 gensim = [
     {file = "gensim-4.0.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:17375b33685d0b36646ff6cec5c9e54c7384d3a7c583cbb4480a8ceb9d811221"},
     {file = "gensim-4.0.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:4cb1761a76338abd6c9345cfacdb75173961e238e01258e0c0e599341d397016"},
