@@ -343,7 +343,7 @@ def preprocess(
 
     if output_format.value == "sparse":
         sparse.save_npz(Path(output_dir, "train.dtm.npz"), dtm)
-        save_json(terms, Path(output_dir, "train.vocab.json"), indent=2)
+        save_json(terms, Path(output_dir, "vocab.json"), indent=2)
         save_json(ids, Path(output_dir, "train.ids.json"), indent=2)
         if val_path:
             sparse.save_npz(Path(output_dir, "val.dtm.npz"), val_dtm)
