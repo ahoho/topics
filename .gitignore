@@ -2,6 +2,9 @@
 .vscode
 output
 philip
+data
+human-evals
+runs/outputs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

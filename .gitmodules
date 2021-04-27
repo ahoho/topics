@@ -1,0 +1,9 @@
+[submodule "soup_nuts/models/etm"]
+	path = soup_nuts/models/etm
+	url = https://github.com/ahoho/ETM
+[submodule "soup_nuts/models/dvae"]
+	path = soup_nuts/models/dvae
+	url = https://github.com/ahoho/dvae
+[submodule "soup_nuts/models/gensim"]
+	path = soup_nuts/models/gensim
+	url = https://github.com/ahoho/gensim-runner
