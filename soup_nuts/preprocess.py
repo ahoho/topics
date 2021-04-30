@@ -130,7 +130,7 @@ def docs_to_matrix(
     if not as_tuples: # add ids if none were used
         doc_tokens = ((doc, i) for i, doc in enumerate(doc_tokens))
     if retain_text:
-        # Store in memory as list. TODO: for large corpora, re-initialize the generator
+        # Store in memory as list. TODO: cache in a temporary file instead
         doc_tokens = [doc for doc in tqdm(doc_tokens, total=total_docs)]
     else:
         doc_tokens = tqdm(doc_tokens, total=total_docs)
@@ -149,7 +149,7 @@ def docs_to_matrix(
     ids = cv.ids
     if retain_text:
         doc_tokens = [
-            " ".join(w for w in doc if w in vocab)
+            " ".join(w for w in doc if w in vocab) # removes words not meeting frequency thresholds
             for doc, i in doc_tokens
         ]
         assert(len(doc_tokens) == dtm.shape[0])
