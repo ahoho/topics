@@ -119,7 +119,7 @@ def preprocess(
             "other values will be interpreted as regex."
         ),
     ),
-    min_chars: int = typer.Option(2, help="Minimum number of characters per word."),
+    min_chars: int = typer.Option(1, help="Minimum number of characters per word."),
     ngram_range: tuple[int, int] = typer.Option(
         (1, 1),
         help=(
@@ -150,7 +150,7 @@ def preprocess(
     max_vocab_size: Optional[int] = typer.Option(
         None,
         min=0,
-        help="Maximum size of the vocabulary. If < 1, share of total vocab to keep",
+        help="Maximum size of the vocabulary."
     ),
     detect_entities: bool = typer.Option(
         False,
