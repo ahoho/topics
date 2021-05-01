@@ -94,7 +94,7 @@ def docs_to_matrix(
     token_regex: Optional[Pattern] = None,
     min_chars: Optional[int] = 0,
     lemmatize: bool = False,
-    vocabulary: Optional[Iterable[str]] = None,
+    vocabulary: Optional[Union[Iterable[str], dict[str, int]]] = None,
     phrases: Optional[Iterable[str]] = None,
     stopwords: Optional[Iterable[str]] = None,
     total_docs: Optional[int] = None,
@@ -142,9 +142,10 @@ def docs_to_matrix(
         min_df=float(min_doc_freq) if min_doc_freq < 1 else int(min_doc_freq),
         max_df=float(max_doc_freq) if max_doc_freq <=1 else int(max_doc_freq),
         max_features=max_vocab_size,#TODO, fix how we describe this param
+        vocabulary=vocabulary,
     )
     dtm = cv.fit_transform(doc_tokens)
-    vocab = {k: int(v) for k, v in sorted(cv.vocabulary_.items(), key=lambda x: x[1])}
+    vocab = {k: int(v) for k, v in cv.vocabulary_.items()}
     ids = cv.ids
     if retain_text:
         doc_tokens = [

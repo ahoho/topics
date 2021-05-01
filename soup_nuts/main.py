@@ -302,8 +302,6 @@ def preprocess(
     )
 
     if val_path or test_path:
-        # if an outside vocab was used, we keep that
-        learned_vocab = vocabulary or [v for v in terms if "_" not in v]
         # on second pass, keep only _learned_ phrases
         learned_phrases = [v for v in terms if "_" in v and v not in (vocabulary or [])]
     if val_path:
@@ -316,7 +314,7 @@ def preprocess(
             token_regex=token_regex,
             min_chars=min_chars,
             lemmatize=lemmatize,
-            vocabulary=learned_vocab,
+            vocabulary=terms,
             phrases=learned_phrases,
             total_docs=total_val,
             retain_text=output_text,
@@ -332,7 +330,7 @@ def preprocess(
             token_regex=token_regex,
             min_chars=min_chars,
             lemmatize=lemmatize,
-            vocabulary=learned_vocab,
+            vocabulary=terms,
             phrases=learned_phrases,
             total_docs=total_test,
             retain_text=output_text,
