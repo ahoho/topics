@@ -19,7 +19,9 @@ templates:
 ## note: use a dictionary {value: name} to assign names to values when formatting the `run_name`
 hyper:
     input_dir: {
-        "/workspace/topic-preprocessing/data/20ng-pyro-tutorial/": "20ng",
+        "/workspace/topic-preprocessing/data/nytimes/processed/canonical": "nytimes",
+        "/workspace/topic-preprocessing/data/wikitext/processed/canonical": "wikitext",
+        "/workspace/topic-preprocessing/data/bbc/processed/canonical": "bbc",
     }
     alpha_prior: [0.1, 0.01, 0.001]
     learning_rate: [0.01, 0.001, 0.0001]
@@ -28,6 +30,7 @@ hyper:
     num_epochs: [100, 200, 500]
     epochs_to_anneal_bn: [0, 1, 100, 200]
     epochs_to_anneal_kl: [1, 100, 200]
+    run_seeds: [42, 11235, 5591, 2021, 2]
 
 # Optional: filter out param values based on the values of other params
 constraints: 
@@ -70,7 +73,5 @@ params:
     compute_eval_loss: false
     max_acceptable_overlap: null
     eval_step: 1
-
-    run_seeds: [42, 11235, 5591, 2021, 2]
 
     gpu: true
