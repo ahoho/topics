@@ -6,36 +6,35 @@ templates:
     command: "/workspace/.conda/envs/pyro-1.6/bin/python /workspace/topic-preprocessing/soup_nuts/models/dvae/main.py --config {config_path} --output_dir {output_dir}/"
     slurm_header: |
         #!/bin/bash
-        #SBATCH --array=0-{n_jobs}
+        #SBATCH --array=0-{n_jobs}%30
         #SBATCH --job-name={job_name}
         #SBATCH --output={log_dir}/{job_name}-%A-%a.log
         #SBATCH --constraint=gpu-small
         #SBATCH --gpus-per-node=1
         #SBATCH --cpus-per-task=4
     # scheme for naming folders
-    run_name: "{input_dir}/k-{num_topics}/dvae/alpha_{alpha_prior}-lr_{learning_rate}-h1dim_{encoder_embeddings_dim}-h2dim_{encoder_hidden_dim}-reg_{topic_word_regularization}-epochs_{num_epochs}-anneal_bn_{epochs_to_anneal_bn}-anneal_kl_{epochs_to_anneal_kl}"
+    run_name: "{input_dir}/k-{num_topics}/dvae/alpha_{alpha_prior}-lr_{learning_rate}-h2dim_{encoder_hidden_dim}-reg_{topic_word_regularization}-epochs_{num_epochs}-anneal_bn_{epochs_to_anneal_bn}-anneal_kl_{epochs_to_anneal_kl}/{run_seeds}"
 
 ## Hyperparams. 
 ## note: use a dictionary {value: name} to assign names to values when formatting the `run_name`
 hyper:
     input_dir: {
-        "/workspace/topic-preprocessing/data/nytimes/processed/canonical": "nytimes",
-        "/workspace/topic-preprocessing/data/wikitext/processed/canonical": "wikitext",
-        "/workspace/topic-preprocessing/data/bbc/processed/canonical": "bbc",
+        "/workspace/topic-preprocessing/data/nytimes/processed/full-mindf_power_law-maxdf_0.9": "nytimes",
+        "/workspace/topic-preprocessing/data/wikitext/processed/full-mindf_power_law-maxdf_0.9": "wikitext",
     }
     alpha_prior: [0.1, 0.01, 0.001]
-    learning_rate: [0.01, 0.001, 0.0001]
-    encoder_hidden_dim: [0, 100] # on or off
+    learning_rate: [0.01, 0.001]
+    encoder_hidden_dim: [0] # on or off
     topic_word_regularization: [0.0, 0.01, 0.1, 1.0]
-    num_epochs: [100, 200, 500]
+    num_epochs: [200, 500]
     epochs_to_anneal_bn: [0, 1, 100, 200]
-    epochs_to_anneal_kl: [1, 100, 200]
-    run_seeds: [42, 11235, 5591, 2021, 2]
+    epochs_to_anneal_kl: [100, 200]
+    run_seeds: [42, 11235, 5591]
 
 # Optional: filter out param values based on the values of other params
 constraints: 
-    - [epochs_to_anneal_bn, <=, num_epochs]
-    - [epochs_to_anneal_kl, <=, num_epochs]
+    - [epochs_to_anneal_bn, <, num_epochs]
+    - [epochs_to_anneal_kl, <, num_epochs]
 
 # Optional: specify directories or filenames of code which will be copied to the ouput dir for posterity
 # Git hashes will also be saved, if available, for these directories
@@ -45,12 +44,12 @@ code_locations:
 # defaults 
 params:
     train_path: train.dtm.npz
-    eval_path: val.dtm.npz
+    eval_path: train.dtm.npz
     vocab_path: vocab.json
     temp_output_dir: /scratch/
     to_dense: false
 
-    num_topics: 20
+    num_topics: 50
 
     encoder_embeddings_dim: 100
     encoder_hidden_dim: 0
@@ -72,6 +71,6 @@ params:
     target_metric: npmi
     compute_eval_loss: false
     max_acceptable_overlap: null
-    eval_step: 1
+    eval_step: 2
 
     gpu: true

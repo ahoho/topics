@@ -6,26 +6,26 @@ templates:
     command: "export PATH=$PATH:/workspace/.conda/envs/gensim/bin && export JAVA_HOME=/workspace/.conda/envs/gensim && /workspace/.conda/envs/gensim/bin/python /workspace/topic-preprocessing/soup_nuts/models/gensim/lda.py --config {config_path} --output_dir {output_dir}/"
     slurm_header: |
         #!/bin/bash
-        #SBATCH --array=0-{n_jobs}
+        #SBATCH --array=0-{n_jobs}%30
         #SBATCH --job-name={job_name}
         #SBATCH --output={log_dir}/{job_name}-%A-%a.log
         #SBATCH --constraint=cpu-med
         #SBATCH --exclusive
     # scheme for naming folders
-    run_name: "{input_dir}/k-{num_topics}/mallet/alpha_{alpha}-beta_{beta}-iter_{iterations}/{run_seeds}"
+    run_name: "{input_dir}/k-{num_topics}/mallet/alpha_{alpha}-beta_{beta}-iter_{iterations}-opt_{optimize_interval}/{run_seeds}"
 
   
 ## Hyperparams
 hyper:
     input_dir: {
-        "/workspace/topic-preprocessing/data/nytimes/processed/canonical": "nytimes",
-        "/workspace/topic-preprocessing/data/wikitext/processed/canonical": "wikitext",
-        "/workspace/topic-preprocessing/data/bbc/processed/canonical": "bbc",
+        "/workspace/topic-preprocessing/data/nytimes/processed/full-mindf_power_law-maxdf_0.9": "nytimes",
+        "/workspace/topic-preprocessing/data/wikitext/processed/full-mindf_power_law-maxdf_0.9": "wikitext",
     }
-    alpha: [0.05, 0.25, 0.1, 1.0, 5.0, 10.0]
-    beta: [0.01, 0.05, 0.1, 1.0]
-    iterations: [500, 1000, 2000]
-    run_seeds: [42, 11235, 5591, 2021, 2]
+    alpha: [0.01, 0.05, 0.1, 0.25, 1.0, 5.0] 
+    beta: [0.01, 0.05, 0.1]
+    iterations: [1000, 2000]
+    run_seeds: [42, 11235, 5591]
+    optimize_interval: [0, 10, 100, 500]
 
 # Optional: specify directories or filenames of code which will be copied to the ouput dir for posterity
 # Git hashes will also be saved, if available, for these directories
@@ -38,11 +38,11 @@ params:
     model: "mallet"
 
     train_path: train.dtm.npz
-    eval_path: val.dtm.npz
+    eval_path: train.dtm.npz
     vocab_path: vocab.json
     temp_output_dir: /scratch/
 
-    num_topics: 20
+    num_topics: 50
 
     alpha: 5.0
     beta: 0.01
