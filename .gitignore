@@ -5,6 +5,8 @@ philip
 data
 human-evals
 runs/outputs
+runs/results
+runs/tmp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
