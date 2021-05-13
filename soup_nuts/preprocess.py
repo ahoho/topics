@@ -4,8 +4,8 @@ from re import Pattern
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Union, Optional
-from numpy import isin
 
+import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from scipy import sparse
 from tqdm import tqdm
@@ -13,6 +13,7 @@ from tqdm import tqdm
 import spacy
 from spacy.language import Language
 from spacy.tokens import Token
+from spacy.lang.en.stop_words import STOP_WORDS
 
 from .phrases import make_phrase_matcher, make_phrase_merger
 from .utils import gen_ngrams
@@ -74,8 +75,8 @@ def _truncate_doc(
     """
     if not max_len:
         return doc
-    if doc.count(" ") > max_len:
-        doc = " ".join(doc.split(" ")[:max_len])
+    if len(doc.split()) > max_len:
+        doc = " ".join(doc.split()[:max_len])
         return doc
     return doc
 
@@ -93,6 +94,7 @@ def docs_to_matrix(
     max_phrase_len: Optional[int] = None,
     token_regex: Optional[Pattern] = None,
     min_chars: Optional[int] = 0,
+    min_doc_size: Optional[int] = 1,
     lemmatize: bool = False,
     vocabulary: Optional[Union[Iterable[str], dict[str, int]]] = None,
     phrases: Optional[Iterable[str]] = None,
@@ -136,6 +138,7 @@ def docs_to_matrix(
         doc_tokens = tqdm(doc_tokens, total=total_docs)
 
     # CountVectorizer is considerably faster than gensim for creating the doc-term mtx
+    # TODO: still need to change to gensim since it will prune large vocabularies live
     cv = CountVectorizerWithID(
         preprocessor=lambda x: x,
         analyzer=lambda x: x,
@@ -153,6 +156,15 @@ def docs_to_matrix(
             for doc, i in doc_tokens
         ]
         assert(len(doc_tokens) == dtm.shape[0])
+
+    # filter-out short documents
+    doc_counts = np.array(dtm.sum(1)).squeeze()
+    if doc_counts.min() < min_doc_size:
+        docs_to_keep = doc_counts  >= min_doc_size
+        dtm = dtm[docs_to_keep]
+        ids = [doc_id for idx, doc_id in enumerate(ids) if docs_to_keep[idx]]
+        doc_tokens = [toks for idx, toks in enumerate(doc_tokens) if docs_to_keep[idx]]
+
     return dtm, vocab, ids, doc_tokens
             
 
@@ -186,7 +198,7 @@ def tokenize_docs(
             case_sensitive=not lowercase,
             lemmatize=lemmatize,
             phrases=phrases,
-            phrase_stopwords=stopwords,
+            phrase_stopwords=stopwords if stopwords is not None else STOP_WORDS,
             max_phrase_len=max_phrase_len,
         )
     else:

@@ -184,6 +184,9 @@ def preprocess(
     max_doc_size: Optional[int] = typer.Option(
         None, min=0, help="Maximum document size in whitespace-delimited tokens"
     ),
+    min_doc_size: Optional[int] = typer.Option(
+        1, min=0, help="Minimum document size",
+    ),
     lemmatize: bool = typer.Option(
         False,
         help=(
@@ -292,6 +295,7 @@ def preprocess(
         max_phrase_len=max_phrase_len,
         token_regex=token_regex,
         min_chars=min_chars,
+        min_doc_size=min_doc_size,
         lemmatize=lemmatize,
         vocabulary=vocabulary,
         phrases=phrases,
@@ -313,6 +317,7 @@ def preprocess(
             double_count_phrases=double_count_phrases, # TODO: may need to make false?
             token_regex=token_regex,
             min_chars=min_chars,
+            min_doc_size=min_doc_size,
             lemmatize=lemmatize,
             vocabulary=terms,
             phrases=learned_phrases,
@@ -329,6 +334,7 @@ def preprocess(
             double_count_phrases=double_count_phrases, # TODO: may need to make false?
             token_regex=token_regex,
             min_chars=min_chars,
+            min_doc_size=min_doc_size,
             lemmatize=lemmatize,
             vocabulary=terms,
             phrases=learned_phrases,
