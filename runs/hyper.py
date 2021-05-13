@@ -196,7 +196,7 @@ def hyper(
     hyper_conf = load_yaml(hyper_settings_yml_path)
     
     # hyper_conf_path is a yml file defining the hyper parameter sweep
-    configs = hyper_to_configs(hyper_conf, random_runs)
+    configs = hyper_to_configs(hyper_conf, random_runs, seed=seed)
 
     # base_config_yml_path is the template for the configuration
     base_config = load_yaml(base_config_yml_path) if base_config_yml_path else {}
