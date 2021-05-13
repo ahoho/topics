@@ -353,7 +353,7 @@ def preprocess(
             sparse.save_npz(Path(output_dir, "val.dtm.npz"), val_dtm)
             save_json(val_ids, Path(output_dir, "val.ids.json"), indent=2)
         if test_path:
-            sparse.save_npz(Path(output_dir, "test.dtm.npz"), val_dtm)
+            sparse.save_npz(Path(output_dir, "test.dtm.npz"), test_dtm)
             save_json(test_ids, Path(output_dir, "test.ids.json"), indent=2)
     if output_format.value == "jsonl":
         save_dtm_as_jsonl(dtm, terms, ids, Path(output_dir, "train.data.jsonl"))
