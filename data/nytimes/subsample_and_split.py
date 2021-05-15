@@ -10,7 +10,7 @@ def read_lines(path, subsample_pct=1.0, min_doc_size=0, seed=11235,):
     random.seed(seed)
     with open(path, "r") as infile:
         return [
-            (i, line.strip()) for i, line in enumerate(infile)
+            line.strip() for line in enumerate(infile)
             if len(line.split()) > min_doc_size
             and random.random() < subsample_pct
         ]
