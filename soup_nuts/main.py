@@ -307,7 +307,7 @@ def preprocess(
 
     if val_path or test_path:
         # on second pass, keep only _learned_ phrases
-        learned_phrases = [v for v in terms if "_" in v and v not in (vocabulary or [])]
+        learned_phrases = [v for v in terms if "_" in v or "-" in v and v not in (vocabulary or [])]
     if val_path:
         logger.info("Processing validation data")
         val_dtm, _, val_ids, val_text = docs_to_matrix(
@@ -340,7 +340,7 @@ def preprocess(
             phrases=learned_phrases,
             total_docs=total_test,
             retain_text=output_text,
-            n_process=n_process,
+            n_process=2,
         )
     # save out
     save_params(params, Path(output_dir, "params.json"))
