@@ -25,8 +25,10 @@ def load_json(path):
 
 def load_tokens(path):
     with open(path) as infile:
-        return [text.strip().split(" ") for text in infile]
-
+        for text in infile:
+            text = text.strip()
+            if text:
+                yield text.split(" ")
 
 def save_json(obj, path):
     with open(path, 'w') as outfile:
@@ -46,16 +48,16 @@ def load_yaml(path):
 def collect_topics(topic_dir, start_at=0, eval_every_n=1, eval_last_only=False):
     """Get all topics from the directory"""
     paths = [
-        (int(re.search("[0-9]+", str(path)).group()), path)
+        (int(re.search("[0-9]+", str(path.name)).group()), path)
         for path in Path(topic_dir).glob("*[0-9].txt")
     ]
     paths = sorted(paths, key=lambda x: x[0])
     if eval_last_only:
         idx, path = paths[-1]
-        return [(idx, path, load_tokens(path))]
+        return [(idx, path, list(load_tokens(path)))]
 
     return [
-        (idx, path, load_tokens(path))
+        (idx, path, list(load_tokens(path)))
         for idx, path in paths 
         if idx >= start_at and idx % eval_every_n == 0
     ]
@@ -100,6 +102,7 @@ def make_runs(args):
         for run_id, run_command in enumerate(commands)
     ]
     slurm_sbatch_script = "\n".join(commands)
+    print(f"found {len(commands)} runs")
     save_text(slurm_sbatch_script, Path(slurm_log_dir.parent, f"{datetime.now():%Y%m%d_%H%M%S}-coherence-runs.sh"))
     return slurm_sbatch_script
 
@@ -111,10 +114,11 @@ def calculate_coherence(args):
     data_dir = config["input_dir"]
 
     #### quick hack to handle scratch directories ###
+    processed_name = Path(data_dir).name
     data_dir_map = {
-        "/workspace/topic-preprocessing/data/nytimes/processed/vocab_25k-mindf_0.0001_or_3-maxdf_0.9": "/scratch/nytimes",
-        "/workspace/topic-preprocessing/data/wikitext/processed/vocab_25k-mindf_0.0001_or_3-maxdf_0.9": "/scratch/wikitext",
-        "/workspace/topic-preprocessing/data/bbc/processed/vocab_25k-mindf_0.0001_or_3-maxdf_0.9": "/scratch/bbc",
+        f"/workspace/topic-preprocessing/data/nytimes/processed/{processed_name}": f"/scratch/{processed_name}/nytimes",
+        f"/workspace/topic-preprocessing/data/wikitext/processed/{processed_name}": f"/scratch/{processed_name}/wikitext",
+        f"/workspace/topic-preprocessing/data/bbc/processed/{processed_name}": f"/scratch/{processed_name}/bbc",
     }
     
     mapped_dir = Path(data_dir_map[data_dir])
@@ -132,7 +136,7 @@ def calculate_coherence(args):
 
         # copy to scratch directory
         print("copying files to scratch")
-        mapped_dir.mkdir(exist_ok=True)
+        mapped_dir.mkdir(exist_ok=True, parents=True)
         shutil.copy(Path(data_dir, ref_corpus_fname), Path(mapped_dir, ref_corpus_fname))
         data_dict.save(str(Path(mapped_dir, "train-dict.npy")))
     ### end hack ###
@@ -174,6 +178,7 @@ def calculate_coherence(args):
         coherence_results = prev_coherence
 
     save_json(coherence_results, parent_dir / "coherences.json")
+    print("done!")
     return coherence_results
 
 if __name__ == "__main__":
@@ -185,7 +190,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval_every_n", type=int)
     parser.add_argument("--eval_last_only", action="store_true", default=False)
     parser.add_argument("--coherence_measure", default="c_v", choices=['u_mass', 'c_v', 'c_uci', 'c_npmi'])
-    parser.add_argument("--reference_corpus", default="val", choices=["val", "train"])
+    parser.add_argument("--reference_corpus", default="test", choices=["val", "train", "test", "full"])
     parser.add_argument("--top_n", type=int, default=10)
     parser.add_argument("--window_size", type=int, default=None)
     parser.add_argument("--python_path", default="/workspace/.conda/envs/gensim/bin/python")
