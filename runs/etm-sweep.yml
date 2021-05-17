@@ -1,0 +1,60 @@
+job_name: "etm"
+
+## These will be populated by the code
+# Note the pipe | before `slurm_header` is necessary to parse as separate lines
+templates:
+    command: "/workspace/.conda/envs/etm/bin/python /workspace/topic-preprocessing/soup_nuts/models/etm/main.py --mode train --config {config_path} --output_dir {output_dir}/"
+    slurm_header: |
+        #!/bin/bash
+        #SBATCH --array=0-{n_jobs}%30
+        #SBATCH --job-name={job_name}
+        #SBATCH --output={log_dir}/{job_name}-%A-%a.log
+        #SBATCH --constraint=gpu-small
+        #SBATCH --gpus-per-node=1
+        #SBATCH --cpus-per-task=4
+    # scheme for naming folders
+    run_name: "{data_path}/k-{num_topics}/etm/lr_{lr}-reg_{wdecay}-epochs_{epochs}-anneal_lr_{anneal_lr}/{seed}"
+
+## Hyperparams. 
+## note: use a dictionary {value: name} to assign names to values when formatting the `run_name`
+hyper:
+    data_path: {
+        "/workspace/topic-preprocessing/data/nytimes/processed/full-mindf_power_law-maxdf_0.9/etm": "nytimes",
+        "/workspace/topic-preprocessing/data/wikitext/processed/full-mindf_power_law-maxdf_0.9/etm": "wikitext",
+    }
+    lr: [0.001, 0.002, 0.01, 0.02]
+    anneal_lr: [0, 1] # off or on
+    wdecay: [1.2e-5, 1.2e-6, 1.2e-7]
+    epochs: [1000, 1500]
+    seed: [42, 11235, 5591]
+        
+# Optional: specify directories or filenames of code which will be copied to the ouput dir for posterity
+# Git hashes will also be saved, if available, for these directories
+code_locations:
+    - /workspace/topic-preprocessing/soup_nuts/models/etm/
+
+# defaults 
+params:
+    batch_size: 1000
+    rho_size: 300
+    emb_size: 300
+    t_hidden_size: 800
+    theta_act: relu
+    train_embeddings: 0
+    temp_output_dir: /scratch/
+
+    num_topics: 50
+    lr_factor: 4.0
+    optimizer: 'adam'
+    enc_drop: 0.0
+    clip: 0.0
+    nonmono: 10
+    bow_norm: 1 
+
+    num_words: 10 
+    topic_words_to_save: 50
+    log_interval: 2
+    visualize_every: 10
+    eval_batch_size: 1000
+    tc: 0
+    td: 0
