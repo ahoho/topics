@@ -2,6 +2,7 @@ import argparse
 from datetime import datetime
 import json
 import re
+import random
 import shutil
 from pathlib import Path
 
@@ -14,8 +15,8 @@ SLURM_HEADER = """#!/bin/bash
 #SBATCH --array=0-{n_jobs}%50
 #SBATCH --job-name=coherence
 #SBATCH --output={log_dir}/coherence-%A-%a.log
-#SBATCH --constraint=cpu-med
-#SBATCH --exclusive
+#SBATCH --constraint=cpu-large
+#SBATCH --cpus-per-task=16
 """
 
 def load_json(path):
@@ -24,11 +25,15 @@ def load_json(path):
 
 
 def load_tokens(path):
+    """
+    Stream tokens from a file.
+    """
     with open(path) as infile:
         for text in infile:
             text = text.strip()
             if text:
                 yield text.split(" ")
+
 
 def save_json(obj, path):
     with open(path, 'w') as outfile:
@@ -45,6 +50,17 @@ def load_yaml(path):
         return yaml.load(infile, Loader=yaml.FullLoader)
 
 
+def gen_measure_name(coherence_measure, window_size, reference_corpus, top_n=10):
+    """
+    Make a unique measure name from the arguments
+    """
+    window_size = f"_{window_size}" if window_size else ""
+    measure_name = f"{coherence_measure}{window_size}_{reference_corpus}"
+    if top_n != 10:
+        measure_name += f"_n{top_n}"
+    return measure_name
+
+
 def collect_topics(topic_dir, start_at=0, eval_every_n=1, eval_last_only=False):
     """Get all topics from the directory"""
     paths = [
@@ -52,6 +68,7 @@ def collect_topics(topic_dir, start_at=0, eval_every_n=1, eval_last_only=False):
         for path in Path(topic_dir).glob("*[0-9].txt")
     ]
     paths = sorted(paths, key=lambda x: x[0])
+
     if eval_last_only:
         idx, path = paths[-1]
         return [(idx, path, list(load_tokens(path)))]
@@ -61,6 +78,15 @@ def collect_topics(topic_dir, start_at=0, eval_every_n=1, eval_last_only=False):
         for idx, path in paths 
         if idx >= start_at and idx % eval_every_n == 0
     ]
+
+
+def make_dictionary(data_dir, cleanups=None):
+    """
+    Create a dictionary in the input directory to save processing time in the future
+    """
+    data_dict = Dictionary(load_tokens(Path(data_dir, "train.txt")))
+    data_dict.save(str(Path(data_dir, "train-dict.npy")))
+    return data_dict
 
 
 def make_runs(args):
@@ -84,12 +110,18 @@ def make_runs(args):
     if args.eval_last_only:
         cmd_template += f" --eval_last_only"
 
+    measure_name = gen_measure_name(args.coherence_measure, args.window_size, args.reference_corpus)
+
     commands = []
     for topic_dir in Path(args.input_dir).glob("**/topics"):
         topic_dir = topic_dir.absolute()
+
+        if not args.update_existing and (topic_dir.parent / "coherences.json").exists():
+            coh = load_json(topic_dir.parent / "coherences.json")
+            if measure_name in coh:
+                continue
+
         if not list(topic_dir.glob("*.txt")):
-            continue
-        if "/dvae/" in str(topic_dir):
             continue
         commands.append(cmd_template.format(input_dir=topic_dir))
 
@@ -113,7 +145,7 @@ def calculate_coherence(args):
     config = load_yaml(parent_dir / "config.yml")
     data_dir = config["input_dir"]
 
-    #### quick hack to handle scratch directories ###
+    #### quick HACK to handle scratch directories, needs cleanup ###
     processed_name = Path(data_dir).name
     data_dir_map = {
         f"/workspace/topic-preprocessing/data/nytimes/processed/{processed_name}": f"/scratch/{processed_name}/nytimes",
@@ -122,23 +154,27 @@ def calculate_coherence(args):
     }
     
     mapped_dir = Path(data_dir_map[data_dir])
-    # HACK: BBC is too small for good estimates
-    ref_corpus = "train" if "bbc" in str(data_dir) else args.reference_corpus
-    ref_corpus_fname = f"{ref_corpus}.txt" # can later update to Wikipedia or whatever
+    ref_corpus = args.reference_corpus
+    ref_corpus_fname = f"{ref_corpus}.txt" # can later update to external if needed
 
     if Path(mapped_dir, "train-dict.npy").exists() and Path(mapped_dir, ref_corpus_fname).exists():
-        print("reading files from scratch")
+        print("reading files from scratch", flush=True)
         data_dict = Dictionary.load(str(Path(mapped_dir, "train-dict.npy")))
         reference_text = load_tokens(Path(mapped_dir, ref_corpus_fname))
     else: 
-        data_dict = Dictionary(load_tokens(Path(data_dir, "train.txt")))
+        print("loading files", flush=True)
+        try:
+            data_dict = Dictionary.load(str(Path(data_dir, "train-dict.npy")))
+        except FileNotFoundError:
+            data_dict = make_dictionary(data_dir)
         reference_text = load_tokens(Path(data_dir, ref_corpus_fname))
 
         # copy to scratch directory
-        print("copying files to scratch")
+        print("copying files to scratch", flush=True)
         mapped_dir.mkdir(exist_ok=True, parents=True)
         shutil.copy(Path(data_dir, ref_corpus_fname), Path(mapped_dir, ref_corpus_fname))
-        data_dict.save(str(Path(mapped_dir, "train-dict.npy")))
+        shutil.copy(Path(data_dir, "train-dict.npy"), Path(mapped_dir, "train-dict.npy"))
+
     ### end hack ###
 
     topic_sets = collect_topics(
@@ -147,21 +183,19 @@ def calculate_coherence(args):
         eval_every_n=args.eval_every_n,
         eval_last_only=args.eval_last_only,
     )
-    
-    measure = args.coherence_measure
-    win_size = f"_{args.window_size}" if args.window_size else ""
 
-    measure_name = f"{measure}{win_size}_{ref_corpus}"
+    measure_name = gen_measure_name(args.coherence_measure, args.window_size, args.reference_corpus)
     coherence_results = {measure_name: {}}
 
-    print("calculating coherence...")
+    print("calculating coherence...", flush=True)
     for idx, path, topics in topic_sets:
         topics = [t[:args.top_n] for t in topics]
+        
         cm = CoherenceModel(
             topics=topics,
             texts=reference_text,
             dictionary=data_dict,
-            coherence=measure,
+            coherence=args.coherence_measure,
             window_size=args.window_size,
         )
         confirmed_measures = cm.get_coherence_per_topic()
@@ -172,7 +206,7 @@ def calculate_coherence(args):
             "path": str(path),
         }
     output_dir = parent_dir / "coherences.json"
-    if output_dir.exists():
+    if output_dir.exists(): # TODO: currently broken, will overwrite different epochs
         prev_coherence = load_json(output_dir)
         prev_coherence.update(**coherence_results)
         coherence_results = prev_coherence
@@ -181,10 +215,11 @@ def calculate_coherence(args):
     print("done!")
     return coherence_results
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--mode", choices=["create_runs", "calculate_coherence"])
+    parser.add_argument("--mode", choices=["create_runs", "calculate_coherence", "make_dictionary"])
     parser.add_argument("--input_dir")
     parser.add_argument("--start_at", type=int)
     parser.add_argument("--eval_every_n", type=int)
@@ -194,9 +229,12 @@ if __name__ == "__main__":
     parser.add_argument("--top_n", type=int, default=10)
     parser.add_argument("--window_size", type=int, default=None)
     parser.add_argument("--python_path", default="/workspace/.conda/envs/gensim/bin/python")
+    parser.add_argument("--update_existing", action="store_true", default=False, help="Update existing measures")
 
     args = parser.parse_args()
 
+    if args.mode == "make_dictionary":
+        dictionary = make_dictionary(args.input_dir)
     if args.mode == "create_runs":
         slurm_sbatch_script = make_runs(args)
         save_text(slurm_sbatch_script, "coherence-runs.sh")
