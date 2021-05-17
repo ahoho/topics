@@ -62,7 +62,7 @@ def read_jsonl(
                 if line:
                     data = json.loads(line)
                     id = str(data[id_key]) if id_key else f"{path}:{i:09}"
-                    text = data[text_key].replace("\n", " ") # remove linebreaks
+                    text = data[text_key]#.replace("\n", " ") # remove linebreaks
                     yield _truncate_doc(text, max_doc_size), id
 
 
