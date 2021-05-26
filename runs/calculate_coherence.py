@@ -168,28 +168,43 @@ def calculate_coherence(args):
         f"/workspace/topic-preprocessing/data/wikitext/processed/{processed_name}": f"/scratch/{processed_name}/wikitext",
         f"/workspace/topic-preprocessing/data/bbc/processed/{processed_name}": f"/scratch/{processed_name}/bbc",
     }
-    
-    mapped_dir = Path(data_dir_map[data_dir])
-    ref_corpus = args.reference_corpus
-    ref_corpus_fname = f"{ref_corpus}.txt" # can later update to external if needed
 
-    if Path(mapped_dir, "train-dict.npy").exists() and Path(mapped_dir, ref_corpus_fname).exists():
-        print("reading files from scratch", flush=True)
-        data_dict = Dictionary.load(str(Path(mapped_dir, "train-dict.npy")))
-        reference_text = load_tokens(Path(mapped_dir, ref_corpus_fname))
-    else: 
-        print("loading files", flush=True)
+    # for out-of-sample coherence
+    ref_corpus = args.reference_corpus
+    if ref_corpus == "wikitext_full" or ref_corpus == "nytimes_full":
         try:
             data_dict = Dictionary.load(str(Path(data_dir, "train-dict.npy")))
         except FileNotFoundError:
             data_dict = make_dictionary(data_dir)
-        reference_text = load_tokens(Path(data_dir, ref_corpus_fname))
+    
+        if ref_corpus == "wikitext_full":
+            mapped_dir = f"/workspace/topic-preprocessing/data/wikitext/processed/{processed_name}"
+        if ref_corpus == "nytimes_full":
+            mapped_dir = f"/workspace/topic-preprocessing/data/nytimes/processed/{processed_name}"
+        ref_corpus_fname = "full.txt"
+    # standard coherence
+    else:
+        ref_corpus = args.reference_corpus
+        ref_corpus_fname = f"{ref_corpus}.txt" # can later update to external if needed
+        mapped_dir = Path(data_dir_map[data_dir])
 
-        # copy to scratch directory
-        print("copying files to scratch", flush=True)
-        mapped_dir.mkdir(exist_ok=True, parents=True)
-        shutil.copy(Path(data_dir, ref_corpus_fname), Path(mapped_dir, ref_corpus_fname))
-        shutil.copy(Path(data_dir, "train-dict.npy"), Path(mapped_dir, "train-dict.npy"))
+        if Path(mapped_dir, "train-dict.npy").exists() and Path(mapped_dir, ref_corpus_fname).exists():
+            print("reading files from scratch", flush=True)
+            data_dict = Dictionary.load(str(Path(mapped_dir, "train-dict.npy")))
+        else: 
+    else: 
+        else: 
+            print("loading files", flush=True)
+            try:
+                data_dict = Dictionary.load(str(Path(data_dir, "train-dict.npy")))
+            except FileNotFoundError:
+                data_dict = make_dictionary(data_dir)
+
+            # copy to scratch directory
+            print("copying files to scratch", flush=True)
+            mapped_dir.mkdir(exist_ok=True, parents=True)
+            shutil.copy(Path(data_dir, ref_corpus_fname), Path(mapped_dir, ref_corpus_fname))
+            shutil.copy(Path(data_dir, "train-dict.npy"), Path(mapped_dir, "train-dict.npy"))
 
     ### end hack ###
 
@@ -235,13 +250,13 @@ def calculate_coherence(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--mode", choices=["create_runs", "calculate_coherence", "make_dictionary"])
+    parser.add_argument("--mode", choices=["create_runs", "calculate_coherence", "make_dictionary", "backup"])
     parser.add_argument("--input_dir")
     parser.add_argument("--start_at", type=int)
     parser.add_argument("--eval_every_n", type=int)
     parser.add_argument("--eval_last_only", action="store_true", default=False)
     parser.add_argument("--coherence_measure", default="c_v", choices=['u_mass', 'c_v', 'c_uci', 'c_npmi'])
-    parser.add_argument("--reference_corpus", default="test", choices=["val", "train", "test", "full"])
+    parser.add_argument("--reference_corpus", default="test", choices=["val", "train", "test", "full", "wikitext_full", "nytimes_full"])
     parser.add_argument("--top_n", type=int, default=10)
     parser.add_argument("--window_size", type=int, default=None)
     parser.add_argument("--python_path", default="/workspace/.conda/envs/gensim/bin/python")
