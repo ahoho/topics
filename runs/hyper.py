@@ -127,7 +127,7 @@ def apply_constraints(params, constraints):
         except KeyError:
             raise KeyError(
                 "Constraints must be one of "
-                "(<, <=, >, >=, ==, !=)"
+                "<, <=, >, >=, ==, !="
             )
         if not op(params[param_name], params[constraint_name]):
             return False
@@ -205,10 +205,7 @@ def hyper(
     code_locations = hyper_conf.get("code_locations", [])
     commands = []
 
-    print(f"Found {len(configs)} possible configurations.")
-    if dry_run:
-        return
-        
+    n_runs = 0
     for c in configs:
         # This defines the path like models/{base_output_path}/{conf_name}
         conf_name = c["conf_name"]
@@ -219,12 +216,20 @@ def hyper(
         if skip_if_file_exists and Path(output_dir, skip_if_file_exists).exists():
             continue
 
+        n_runs += 1
+        if dry_run:
+            continue
+
         output_dir.mkdir(parents=True, exist_ok=True)
         filled_conf = {**base_config, **c["params"]}
         save_yaml(filled_conf, conf_path)
 
         run_command = run_template.format(config_path=conf_path, output_dir=output_dir)
         commands.append(run_command)
+
+    print(f"Found {n_runs} configurations.")
+    if dry_run:
+        return
 
     # add slurm-specific items
     base_log_dir = Path(base_output_path, "_run-logs")
