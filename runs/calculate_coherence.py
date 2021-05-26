@@ -2,7 +2,6 @@ import argparse
 from datetime import datetime
 import json
 import re
-import random
 import shutil
 from pathlib import Path
 
@@ -132,6 +131,10 @@ def make_runs(args, save=True):
     for topic_dir in Path(args.input_dir).glob("**/topics"):
         topic_dir = topic_dir.absolute()
 
+        # TODO add regex filter to keep/drop
+        if '_run-logs' in str(topic_dir):
+            continue
+
         if not args.update_existing and (topic_dir.parent / "coherences.json").exists():
             coh = load_json(topic_dir.parent / "coherences.json")
             if measure_name in coh:
@@ -157,11 +160,14 @@ def make_runs(args, save=True):
     return slurm_sbatch_script
 
 
-def calculate_coherence(args):
+def calculate_coherence(args, save=True):
     topic_dir = Path(args.input_dir)
     parent_dir = topic_dir.parent
     config = load_yaml(parent_dir / "config.yml")
-    data_dir = config["input_dir"]
+    try:
+        data_dir = config["input_dir"] # dvae, mallet
+    except KeyError:
+        data_dir = str(Path(config["data_path"]).parent) # etm
 
     #### quick HACK to handle scratch directories, needs cleanup ###
     processed_name = Path(data_dir).name
@@ -194,8 +200,6 @@ def calculate_coherence(args):
             print("reading files from scratch", flush=True)
             data_dict = Dictionary.load(str(Path(mapped_dir, "train-dict.npy")))
         else: 
-    else: 
-        else: 
             print("loading files", flush=True)
             try:
                 data_dict = Dictionary.load(str(Path(data_dir, "train-dict.npy")))
@@ -209,7 +213,7 @@ def calculate_coherence(args):
             shutil.copy(Path(data_dir, "train-dict.npy"), Path(mapped_dir, "train-dict.npy"))
 
     ### end hack ###
-
+    
     topic_sets = collect_topics(
         topic_dir=topic_dir,
         start_at=args.start_at,
@@ -241,6 +245,9 @@ def calculate_coherence(args):
             "by_topic": [float(i) for i in confirmed_measures], # needs to be python float to json-serialize
             "path": str(path),
         }
+    if not save:
+        return coherence_results
+
     output_dir = parent_dir / "coherences.json"
     if output_dir.exists(): # TODO: currently broken, will overwrite different epochs
         prev_coherence = load_json(output_dir)
