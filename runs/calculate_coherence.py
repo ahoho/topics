@@ -89,7 +89,21 @@ def make_dictionary(data_dir, cleanups=None):
     return data_dict
 
 
-def make_runs(args):
+def backup_coherences(input_dir):
+    """
+    Consolidate and backup the existing coherence files in a directory
+    """
+    coherence_paths = Path(args.input_dir).glob("**/coherences.json")
+    coherences = {str(p): load_json(p) for p in coherence_paths}
+    backup_path = Path(args.input_dir, f"{datetime.now():%Y%m%d}-coherences.json")
+    if backup_path.exists():
+        backup_path = Path(args.input_dir, f"{datetime.now():%Y%m%d_%H%M%S}-coherences.json")
+    save_json(coherences, backup_path)
+    print(f"Found and backed up {len(coherences)} coherence.json files at {backup_path}")
+    return coherences
+
+
+def make_runs(args, save=True):
     """
     Generate slurm runs to calculate coherence en masse
     """
@@ -124,6 +138,8 @@ def make_runs(args):
         if not list(topic_dir.glob("*.txt")):
             continue
         commands.append(cmd_template.format(input_dir=topic_dir))
+    if not save:
+        return commands
 
     slurm_log_dir = Path(args.input_dir, "_run-logs/coherence/slurm-logs")
     slurm_log_dir.mkdir(exist_ok=True, parents=True)
@@ -235,6 +251,8 @@ if __name__ == "__main__":
 
     if args.mode == "make_dictionary":
         dictionary = make_dictionary(args.input_dir)
+    if args.mode == "backup":
+        coherences = backup_coherences(args.input_dir)
     if args.mode == "create_runs":
         slurm_sbatch_script = make_runs(args)
         save_text(slurm_sbatch_script, "coherence-runs.sh")
