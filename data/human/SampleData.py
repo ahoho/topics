@@ -18,7 +18,7 @@ def main():
         if TASK == 'ratings':          
             new_df[col] = data[col].dropna().sample(15,random_state=1, replace = True).values
         elif TASK == 'intrusion':
-            new_df[col] = data[col].dropna().sample(15,random_state=1).values
+            new_df[col] = data[col].dropna().sample(26,random_state=1).values
 
 
     new_df.to_csv(f'{FOLDER}/{SOURCE}_{TASK}_sampled.csv')
