@@ -225,6 +225,7 @@ def calculate_coherence(args):
     print("calculating coherence...", flush=True)
     for idx, path, topics in topic_sets:
         topics = [t[:args.top_n] for t in topics]
+        reference_text = load_tokens(Path(mapped_dir, ref_corpus_fname))
         
         cm = CoherenceModel(
             topics=topics,
