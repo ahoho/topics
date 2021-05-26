@@ -28,3 +28,5 @@ python CreateJointFile.py 'all_data' 'nytimes' 'ratings'
 python CreateJointFile.py 'all_data' 'wikitext' 'ratings'
 
 echo "Done \n  File should now contain new keys"
+
+python create_df_from_json.py 'all_data' 'all_data.json'
