@@ -1,6 +1,7 @@
 import pandas as pd
 from collections import defaultdict
 import sys
+import json
 
 task_names = ['intrusion', 'ratings']
 model_names = ['mallet', 'dvae', 'etm']
@@ -17,7 +18,7 @@ def main():
         correct_rating, correct_confidence = '3', '4'
 
 
-    data = pd.read_json(f'{FOLDER}/all_data.json')
+    data = json.load(open(f'{FOLDER}/all_data.json', 'r'))#pd.read_json(f'{FOLDER}/all_data.json')
     human_data = pd.read_csv(f'{FOLDER}/{SOURCE}_{TASK}_sampled.csv')
     human_data = human_data.drop(columns = 'Unnamed: 0')
 
@@ -69,7 +70,7 @@ def main():
         data[f'{SOURCE}'][model]['metrics'][f'{TASK}_confidences_avg'] = [sum(row)/len(row) for row in models_final[model]['confidences']]
 
 
-    data.to_json(f'{FOLDER}/all_data.json')
+    json.dump(data, open(f'{FOLDER}/all_data.json', 'w'))#data.to_json(f'{FOLDER}/all_data.json')
 
 
 if __name__ == "__main__":
