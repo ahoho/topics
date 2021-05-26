@@ -148,7 +148,8 @@ def docs_to_matrix(
         vocabulary=vocabulary,
     )
     dtm = cv.fit_transform(doc_tokens)
-    vocab = {k: int(v) for k, v in cv.vocabulary_.items()}
+    # sort and convert to a python (not numpy) int for saving
+    vocab = {k: int(v) for k, v in sorted(cv.vocabulary_.items(), key=lambda kv: kv[1])}
     ids = cv.ids
     if retain_text:
         doc_tokens = [
