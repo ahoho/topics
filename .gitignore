@@ -3,10 +3,13 @@
 output
 philip
 data
-human-evals
+previous-human-evals
 runs/outputs
 runs/results
 runs/tmp
+redundancy-experiments.ipynb
+runs/*.sh
+chang_2009/rtl_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
