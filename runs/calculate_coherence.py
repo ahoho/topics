@@ -50,14 +50,14 @@ def load_yaml(path):
         return yaml.load(infile, Loader=yaml.FullLoader)
 
 
-def gen_measure_name(coherence_measure, window_size, reference_corpus, top_n=10):
+def gen_measure_name(coherence_measure, window_size, reference_corpus, top_n):
     """
     Make a unique measure name from the arguments
     """
     window_size = f"_{window_size}" if window_size else ""
     measure_name = f"{coherence_measure}{window_size}_{reference_corpus}"
     if top_n != 10:
-        measure_name += f"_n{top_n}"
+        measure_name += f"_top{top_n}"
     return measure_name
 
 
@@ -124,7 +124,9 @@ def make_runs(args, save=True):
     if args.eval_last_only:
         cmd_template += f" --eval_last_only"
 
-    measure_name = gen_measure_name(args.coherence_measure, args.window_size, args.reference_corpus)
+    measure_name = gen_measure_name(
+        args.coherence_measure, args.window_size, args.reference_corpus, args.top_n
+    )
 
     commands = []
     for topic_dir in Path(args.input_dir).glob("**/topics"):
@@ -215,7 +217,9 @@ def calculate_coherence(args):
         eval_last_only=args.eval_last_only,
     )
 
-    measure_name = gen_measure_name(args.coherence_measure, args.window_size, args.reference_corpus)
+    measure_name = gen_measure_name(
+        args.coherence_measure, args.window_size, args.reference_corpus, args.top_n
+    )
     coherence_results = {measure_name: {}}
 
     print("calculating coherence...", flush=True)
