@@ -9,7 +9,7 @@ import pandas as pd
 
 from plotnine import *
 
-task_data = pd.read_csv('topics/data/human/all_data/all_data.csv')
+task_data = pd.read_csv('../data/human/all_data/all_data.csv')
 
 task_averages = task_data.groupby(['task', 'dataset', 'model', 'topic_idx'])[["scores_raw"]].mean().reset_index()
 
@@ -64,11 +64,11 @@ ggsave(
         panel_grid_minor=element_blank(),
         panel_border=element_blank(),
         panel_background=element_blank(),
-        plot_title=element_text(size=15, family="Tahoma", 
+        plot_title=element_text(size=12, family="Tahoma", 
                                 face="bold"),
-        text=element_text(family="Tahoma", size=12),
-        axis_text_x=element_text(colour="black", size=12),
-        axis_text_y=element_text(colour="black", size=12),
+        text=element_text(family="Tahoma", size=8),
+        axis_text_x=element_text(colour="black", size=8),
+        axis_text_y=element_text(colour="black", size=6),
         subplots_adjust={'wspace': 0.3, 'hspace': 0.5},
         strip_margin_x=0.3,
     )
