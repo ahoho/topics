@@ -66,9 +66,9 @@ ggsave(
         panel_background=element_blank(),
         plot_title=element_text(size=12, family="Tahoma", 
                                 face="bold"),
-        text=element_text(family="Tahoma", size=8),
-        axis_text_x=element_text(colour="black", size=8),
-        axis_text_y=element_text(colour="black", size=6),
+        text=element_text(family="Tahoma", size=10),
+        axis_text_x=element_text(colour="black", size=10),
+        axis_text_y=element_text(colour="black", size=8),
         subplots_adjust={'wspace': 0.3, 'hspace': 0.5},
         strip_margin_x=0.3,
     )
