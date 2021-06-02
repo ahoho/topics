@@ -1,0 +1,530 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_5sXmuibskKlpHmJ",
+    "SurveyName": "Intrusion Template",
+    "SurveyDescription": null,
+    "SurveyOwnerID": "UR_1MmbX0D3bAle6sR",
+    "SurveyBrandID": "umd",
+    "DivisionID": null,
+    "SurveyLanguage": "EN",
+    "SurveyActiveResponseSet": "RS_0kzni4mqsdYYSMZ",
+    "SurveyStatus": "Active",
+    "SurveyStartDate": "0000-00-00 00:00:00",
+    "SurveyExpirationDate": "0000-00-00 00:00:00",
+    "SurveyCreationDate": "2020-09-26 12:59:59",
+    "CreatorID": "UR_1MmbX0D3bAle6sR",
+    "LastModified": "2021-05-20 14:55:01",
+    "LastAccessed": "0000-00-00 00:00:00",
+    "LastActivated": "2021-05-15 16:28:21",
+    "Deleted": null
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": [
+        {
+          "Type": "Default",
+          "Description": "Introduction Block",
+          "ID": "BL_cvxoPps3HflxlsN",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID1"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID2"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID3"
+            }
+          ]
+        },
+        {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_0IH9ow1MoCfyMW9"
+        },
+        {
+          "Type": "Standard",
+          "SubType": "",
+          "Description": "Intruder Experiment",
+          "ID": "BL_2soHZqi6foVxie1",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID6"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID4"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID5"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "RandomWithXPerPage",
+            "Randomization": {
+              "Advanced": {
+                "QuestionsPerPage": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Type": "Root",
+        "FlowID": "FL_1",
+        "Flow": [
+          {
+            "Type": "EmbeddedData",
+            "FlowID": "FL_4",
+            "EmbeddedData": [
+              {
+                "Description": "PROLIFIC_PID",
+                "Type": "Recipient",
+                "Field": "PROLIFIC_PID",
+                "VariableType": "String",
+                "DataVisibility": [],
+                "AnalyzeText": false
+              }
+            ]
+          },
+          {
+            "Type": "Block",
+            "ID": "BL_cvxoPps3HflxlsN",
+            "FlowID": "FL_2",
+            "Autofill": []
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_2soHZqi6foVxie1",
+            "FlowID": "FL_3",
+            "Autofill": []
+          }
+        ],
+        "Properties": {
+          "Count": 4,
+          "RemovedFieldsets": []
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "BackButton": "false",
+        "SaveAndContinue": "true",
+        "SurveyProtection": "PublicSurvey",
+        "BallotBoxStuffingPrevention": "true",
+        "NoIndex": "Yes",
+        "SecureResponseFiles": "true",
+        "SurveyExpiration": null,
+        "SurveyTermination": "Redirect",
+        "Header": "",
+        "Footer": "",
+        "ProgressBarDisplay": "Text",
+        "PartialData": "+1 week",
+        "ValidationMessage": null,
+        "PreviousButton": " \u2190 ",
+        "NextButton": " \u2192 ",
+        "SurveyTitle": "Online Survey Software | Qualtrics Survey Solutions",
+        "SkinLibrary": "umd",
+        "SkinType": "MQ",
+        "Skin": "umd2_new",
+        "NewScoring": 1,
+        "EOSMessage": "",
+        "ShowExportTags": "false",
+        "CollectGeoLocation": "false",
+        "SurveyMetaDescription": "The most powerful, simple and trusted way to gather experience data. Start your journey to experience management and try a free account today.",
+        "PasswordProtection": "No",
+        "AnonymizeResponse": "No",
+        "Password": "",
+        "RefererCheck": "No",
+        "RefererURL": "http://",
+        "UseCustomSurveyLinkCompletedMessage": null,
+        "SurveyLinkCompletedMessage": "",
+        "SurveyLinkCompletedMessageLibrary": "",
+        "ResponseSummary": "No",
+        "EOSMessageLibrary": "",
+        "EOSRedirectURL": "https://prolific.com",
+        "EmailThankYou": "false",
+        "ThankYouEmailMessageLibrary": null,
+        "ThankYouEmailMessage": null,
+        "ValidateMessage": "true",
+        "ValidationMessageLibrary": null,
+        "InactiveSurvey": "DefaultMessage",
+        "PartialDataCloseAfter": "LastActivity",
+        "ActiveResponseSet": null,
+        "InactiveMessageLibrary": "",
+        "InactiveMessage": "",
+        "AvailableLanguages": {
+          "EN": []
+        },
+        "PartialDeletion": null,
+        "QuestionsPerPage": "10"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SCO",
+      "PrimaryAttribute": "Scoring",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "ScoringCategories": [],
+        "ScoringCategoryGroups": [],
+        "ScoringSummaryCategory": null,
+        "ScoringSummaryAfterQuestions": 0,
+        "ScoringSummaryAfterSurvey": 0,
+        "DefaultScoringCategory": null,
+        "AutoScoringCategory": null
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "PROJ",
+      "PrimaryAttribute": "CORE",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": "1.1.0",
+      "Payload": {
+        "ProjectCategory": "CORE",
+        "SchemaVersion": "1.1.0"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "STAT",
+      "PrimaryAttribute": "Survey Statistics",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "MobileCompatible": true,
+        "ID": "Survey Statistics"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "6",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": " ",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": " ",
+        "DefaultChoices": false,
+        "DataExportTag": "Q2",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": " ",
+        "ChoiceOrder": [],
+        "Validation": {
+          "Settings": {
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "QuestionID": "QID2",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "RS",
+      "PrimaryAttribute": "RS_0kzni4mqsdYYSMZ",
+      "SecondaryAttribute": "Default Response Set",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID6",
+      "SecondaryAttribute": "Identify which word does not belong with the others",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DataExportTag": "Q3",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "1": {
+            "Display": "Cat"
+          },
+          "2": {
+            "Display": "Dog"
+          },
+          "3": {
+            "Display": "Fish"
+          },
+          "4": {
+            "Display": "Snake"
+          },
+          "5": {
+            "Display": "Rabbit"
+          },
+          "6": {
+            "Display": "Carrot"
+          }
+        },
+        "ChoiceOrder": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID6",
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID4",
+      "SecondaryAttribute": "Identify which word does not belong with the others",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DataExportTag": "Q4",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "1": {
+            "Display": "Carrot"
+          },
+          "2": {
+            "Display": "Onion"
+          },
+          "3": {
+            "Display": "Potato"
+          },
+          "4": {
+            "Display": "Tomato"
+          },
+          "5": {
+            "Display": "Garlic"
+          },
+          "6": {
+            "Display": "Car"
+          }
+        },
+        "ChoiceOrder": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID4",
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID5",
+      "SecondaryAttribute": "Identify which word does not belong with the others",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DataExportTag": "Q5",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "1": {
+            "Display": "Covid"
+          },
+          "2": {
+            "Display": "SARS"
+          },
+          "3": {
+            "Display": "MERS"
+          },
+          "4": {
+            "Display": "Influenze"
+          },
+          "5": {
+            "Display": "Asthma"
+          },
+          "6": {
+            "Display": "Professor"
+          }
+        },
+        "ChoiceOrder": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID5",
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "Please enter your Prolific PID:",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Please enter your Prolific PID:",
+        "DefaultChoices": {
+          "TEXT": {
+            "Text": "${e://Field/PROLIFIC_PID}"
+          }
+        },
+        "DataExportTag": "prolific",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Please enter your Prolific PID:",
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "SearchSource": {
+          "AllowFreeResponse": "false"
+        },
+        "QuestionID": "QID3"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "This survey asks you to look at lists of words produced by an automatic\u00a0 computer program. For ea..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">This survey asks you to look at lists of words produced by an automatic&nbsp; computer program. For each list, you\u2019ll be answering the question: \u201cWhich word doesn\u2019t belong?\u201d</span></p>\n\n<ul>\n\t<li><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">You will be shown ten sets of six words.</span></li>\n\t<li><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">For each set, click the word whose </span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:italic;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">meaning</span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"> or </span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:italic;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">usage</span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"> is most unlike that of the other words.</span></li>\n\t<li><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">If you feel that multiple words do not belong, choose the one that you feel is most out of place.</span></li>\n\t<li><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Do not base your decisions on how the word is pronounced or written or its grammatical function. For example, if you saw {apple, apricot, anvils, peach), you would not choose \u201cpeach\u201d because it doesn\u2019t start with \u201ca\u201d, you would not choose \u201capricot\u201d because it isn\u2019t five letters long, and you would not choose \u201capple\u201d because it ends with a vowel. Ideally, you would choose \u201canvils\u201d because it is not a fruit.</span></li>\n</ul>\n&nbsp;\n\n<p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Here are some examples:</span></p>\n\n<p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">\"baby\", \"crib\", \"diaper\", \"beer\", \"pacifier\", \"cry\"</span></p>\n\n<p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">In this example the word 'beer' is the least related. All of the other words are closely related to each other, and related to infants.</span></p>\n\n<p>&nbsp;</p>\n\n<p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Here is another, harder, example:</span></p>\n\n<p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">\"Hard Drive\", \"motherboard\", \"video card\", \"processor\", \"RAM\", \"USB key\"</span></p>\n\n<p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">While all of these terms are related to a computer, all but one of them are components </span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:italic;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">inside of</span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"> a computer. The best choice is therefore 'USB key'.</span></p>\n\n<p>&nbsp;</p>\n\n<p><span style=\"font-size: 13.5pt; font-family: Arial; color: rgb(67, 70, 77); background-color: transparent; font-style: normal; font-variant: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;\"><b>You may not always know all the words and that's okay.</b></span></p>",
+        "DefaultChoices": false,
+        "DataExportTag": "Q1",
+        "QuestionID": "QID1",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "This survey asks you to look at lists of words produced by an automatic\u00a0 computer program. For ea...",
+        "ChoiceOrder": [],
+        "Validation": {
+          "Settings": {
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    }
+  ]
+}

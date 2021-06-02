@@ -1,0 +1,488 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_4My2xeJALXVC80l",
+    "SurveyName": "Topic Ratings Template",
+    "SurveyDescription": null,
+    "SurveyOwnerID": "UR_1MmbX0D3bAle6sR",
+    "SurveyBrandID": "umd",
+    "DivisionID": null,
+    "SurveyLanguage": "EN",
+    "SurveyActiveResponseSet": "RS_3TWgJxVdQvWZKbX",
+    "SurveyStatus": "Inactive",
+    "SurveyStartDate": "0000-00-00 00:00:00",
+    "SurveyExpirationDate": "0000-00-00 00:00:00",
+    "SurveyCreationDate": "2020-09-27 11:48:45",
+    "CreatorID": "UR_1MmbX0D3bAle6sR",
+    "LastModified": "2021-05-20 14:44:05",
+    "LastAccessed": "0000-00-00 00:00:00",
+    "LastActivated": "0000-00-00 00:00:00",
+    "Deleted": null
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": [
+        {
+          "Type": "Default",
+          "Description": "Introduction Block",
+          "ID": "BL_3pCRc9xN2u4DSo5",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID1"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID2"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID3"
+            }
+          ]
+        },
+        {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_5gyNEZgeLuZ2kbX",
+          "BlockElements": []
+        },
+        {
+          "Type": "Standard",
+          "SubType": "",
+          "Description": "Topic Ratings",
+          "ID": "BL_a4ViNnjRr1CNXkV",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID6"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID4"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID5"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "RandomWithXPerPage",
+            "Randomization": {
+              "Advanced": {
+                "QuestionsPerPage": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Type": "Root",
+        "FlowID": "FL_1",
+        "Flow": [
+          {
+            "Type": "EmbeddedData",
+            "FlowID": "FL_4",
+            "EmbeddedData": [
+              {
+                "Description": "PROLIFIC_PID",
+                "Type": "Recipient",
+                "Field": "PROLIFIC_PID",
+                "VariableType": "String",
+                "DataVisibility": [],
+                "AnalyzeText": false
+              }
+            ]
+          },
+          {
+            "Type": "Block",
+            "ID": "BL_3pCRc9xN2u4DSo5",
+            "FlowID": "FL_2",
+            "Autofill": []
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_a4ViNnjRr1CNXkV",
+            "FlowID": "FL_3",
+            "Autofill": []
+          }
+        ],
+        "Properties": {
+          "Count": 4,
+          "RemovedFieldsets": []
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "BackButton": "false",
+        "SaveAndContinue": "true",
+        "SurveyProtection": "PublicSurvey",
+        "BallotBoxStuffingPrevention": "false",
+        "NoIndex": "Yes",
+        "SecureResponseFiles": "true",
+        "SurveyExpiration": "None",
+        "SurveyTermination": "Redirect",
+        "Header": "",
+        "Footer": "",
+        "ProgressBarDisplay": "Text",
+        "PartialData": "+1 week",
+        "ValidationMessage": null,
+        "PreviousButton": " \u2190 ",
+        "NextButton": " \u2192 ",
+        "SurveyTitle": "Online Survey Software | Qualtrics Survey Solutions",
+        "SkinLibrary": "umd",
+        "SkinType": "MQ",
+        "Skin": "umd2_new",
+        "NewScoring": 1,
+        "EOSMessage": null,
+        "ShowExportTags": "false",
+        "CollectGeoLocation": "false",
+        "SurveyMetaDescription": "Survey Software, Enterprise Survey software for enterprise feedback management and CRM solutions. Enables high-quality data collection, panel management and results analysis. Perfect for market research or CRM solution (Customer Relationship Management) integration. Free trial and consultation.",
+        "PasswordProtection": "No",
+        "AnonymizeResponse": "No",
+        "RefererCheck": "No",
+        "UseCustomSurveyLinkCompletedMessage": null,
+        "SurveyLinkCompletedMessage": null,
+        "SurveyLinkCompletedMessageLibrary": null,
+        "ResponseSummary": "No",
+        "EOSMessageLibrary": null,
+        "EOSRedirectURL": "http://prolific.co",
+        "EmailThankYou": "false",
+        "ThankYouEmailMessageLibrary": null,
+        "ThankYouEmailMessage": null,
+        "ValidateMessage": "false",
+        "ValidationMessageLibrary": null,
+        "InactiveSurvey": null,
+        "PartialDeletion": null,
+        "PartialDataCloseAfter": "LastActivity",
+        "InactiveMessageLibrary": null,
+        "InactiveMessage": null,
+        "AvailableLanguages": {
+          "EN": []
+        },
+        "QuestionsPerPage": "10"
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SCO",
+      "PrimaryAttribute": "Scoring",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "ScoringCategories": [],
+        "ScoringCategoryGroups": [],
+        "ScoringSummaryCategory": null,
+        "ScoringSummaryAfterQuestions": 0,
+        "ScoringSummaryAfterSurvey": 0,
+        "DefaultScoringCategory": null,
+        "AutoScoringCategory": null
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "PROJ",
+      "PrimaryAttribute": "CORE",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": "1.1.0",
+      "Payload": {
+        "ProjectCategory": "CORE",
+        "SchemaVersion": "1.1.0"
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "STAT",
+      "PrimaryAttribute": "Survey Statistics",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "MobileCompatible": true,
+        "ID": "Survey Statistics"
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": " ",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "&nbsp;",
+        "DefaultChoices": false,
+        "DataExportTag": "Q2",
+        "QuestionID": "QID2",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": " ",
+        "ChoiceOrder": [],
+        "Validation": {
+          "Settings": {
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 8,
+        "NextAnswerId": 1,
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "6",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "RS",
+      "PrimaryAttribute": "RS_3TWgJxVdQvWZKbX",
+      "SecondaryAttribute": "Default Response Set",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID5",
+      "SecondaryAttribute": "How related are the following terms: A, B, C, D, E, F, G, H, I, J",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<span style=\"font-weight: bolder;\">How related are the following terms:</span><div><b>A, B, C, D, E, F, G, H, I, J</b></div>",
+        "DataExportTag": "Q5",
+        "QuestionType": "MC",
+        "Selector": "SAHR",
+        "SubSelector": "TX",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "LabelPosition": "BELOW"
+        },
+        "QuestionDescription": "How related are the following terms: A, B, C, D, E, F, G, H, I, J",
+        "Choices": {
+          "1": {
+            "Display": "Not Very Related"
+          },
+          "2": {
+            "Display": "Somewhat Related"
+          },
+          "3": {
+            "Display": "Very Related"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "QuestionID": "QID5"
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID6",
+      "SecondaryAttribute": "How related are the following terms: Apple, Banana, Orange, Grape, Peach, Mango, Pineapple, Lemon...",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<span style=\"font-weight: bolder;\">How related are the following terms:</span><div><span style=\"font-weight: bolder;\">Apple, Banana, Orange, Grape, Peach, Mango, Pineapple, Lemon, Lime, Cherry</span></div>",
+        "DataExportTag": "Q3",
+        "QuestionType": "MC",
+        "Selector": "SAHR",
+        "SubSelector": "TX",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "LabelPosition": "BELOW"
+        },
+        "QuestionDescription": "How related are the following terms: Apple, Banana, Orange, Grape, Peach, Mango, Pineapple, Lemon...",
+        "Choices": {
+          "1": {
+            "Display": "Not Very Related"
+          },
+          "2": {
+            "Display": "Somewhat Related"
+          },
+          "3": {
+            "Display": "Very Related"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "QuestionID": "QID6"
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID4",
+      "SecondaryAttribute": "How related are the following terms: California, Minnesota, Michigan, Wisconsin, Texas, Florida,...",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<span style=\"font-weight: bolder;\">How related are the following terms:</span><div><b>California, Minnesota, Michigan, Wisconsin, Texas, Florida, Pennsylvania, Arizona, Georgia, Virginia</b></div>",
+        "DataExportTag": "Q4",
+        "QuestionType": "MC",
+        "Selector": "SAHR",
+        "SubSelector": "TX",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "LabelPosition": "BELOW"
+        },
+        "QuestionDescription": "How related are the following terms: California, Minnesota, Michigan, Wisconsin, Texas, Florida,...",
+        "Choices": {
+          "1": {
+            "Display": "Not Very Related"
+          },
+          "2": {
+            "Display": "Somewhat Related"
+          },
+          "3": {
+            "Display": "Very Related"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "QuestionID": "QID4"
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "Please enter your Prolific PID:",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Please enter your Prolific PID:",
+        "DefaultChoices": {
+          "TEXT": {
+            "Text": "${e://Field/PROLIFIC_PID}"
+          }
+        },
+        "DataExportTag": "prolific",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Please enter your Prolific PID:",
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "SearchSource": {
+          "AllowFreeResponse": "false"
+        },
+        "QuestionID": "QID3"
+      }
+    },
+    {
+      "SurveyID": "SV_4My2xeJALXVC80l",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "This survey asks you to evaluate lists of words produced by an automatic\u00a0 method. \u00a0 The computer..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<span id=\"docs-internal-guid-96902da8-7fff-bada-408b-ac9d1df4fe74\"><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">This survey asks you to evaluate lists of words produced by an automatic&nbsp; method.</span></p><p>&nbsp;</p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">The computer model we are testing seeks to identify groups of words that are highly related to each other. You will be asked to select how related groups of words are on a 3-point scale.<br><br>The rating options are: Not Very Related, Somewhat Related, Very Related.</span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"><br>A helpful question to ask yourself is: \u201cwhat is this group of words about?\u201d If you can answer easily, then the words are probably related. Here is some guidance on how to apply these ratings and some examples.</span></p><p>&nbsp;</p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:700;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Very Related </span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">- Most of the words are clearly related to each other, and it would be easy to describe how they are related.</span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"><br></span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Example: \"dog\", \"cat\", \"hamster\", \"rabbit\", \"snake\" (An obvious way to describe the relationship here would be 'Pets')</span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"><br></span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Example: \"brushwork\", \"canvases\", \"expressionism\", \"cubism\", \"modernism\", \"curators\", \"abstract_expressionism\", \"national_gallery_of_art\", \u201cmuseum\u201d, \u201cfossils\u201d (An obvious way to describe this would be \u201cart\u201d, even though one or two of the words are not as clearly related to that.)</span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">&nbsp;</span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:700;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Somewhat Related </span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">- The words are loosely related to each other, but there may be a few ambiguous, generic, or unrelated words</span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"><br></span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Example: \"computer\", \"video\", \"new\", \"plug\", \"screen\", \"model\" (In this example, some of the words are generic, and seem more closely related than others)</span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"><br></span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Example: \"dog\", \"ball\", \"pet\", \"receipt\", \"pen\" (In this example, some of the words seem closely related, but not all of them)</span></p><p>&nbsp;</p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:700;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Not Very Related </span><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">- The words do not share any obvious relationship to each other. It would be difficult to describe how the words are related to each other.</span></p><p><span id=\"docs-internal-guid-36e35a7b-7fff-75b2-d625-7afdd5b6966c\"></span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\"><br></span></p><p><span style=\"font-size:13.5pt;font-family:Arial;color:#43464d;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Example: \"dog\", \"apple\", \"pencil\", \"earth\", \"computer\"</span></p><p>&nbsp;</p><p><br></p><div><span style=\"font-size: 13.5pt; font-family: Arial; color: rgb(67, 70, 77); background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><br></span></div></span>",
+        "DefaultChoices": false,
+        "DataExportTag": "Q1",
+        "QuestionID": "QID1",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "This survey asks you to evaluate lists of words produced by an automatic\u00a0 method. \u00a0 The computer...",
+        "ChoiceOrder": [],
+        "Validation": {
+          "Settings": {
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    }
+  ]
+}
