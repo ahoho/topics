@@ -7,6 +7,3 @@
 [submodule "soup_nuts/models/gensim"]
 	path = soup_nuts/models/gensim
 	url = https://github.com/ahoho/gensim-runner
-[submodule "human_evaluation"]
-	path = human_evaluation
-	url = ./human_evaluation/
