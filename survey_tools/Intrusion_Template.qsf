@@ -1,0 +1,598 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_5sXmuibskKlpHmJ",
+    "SurveyName": "Intrusion Template",
+    "SurveyDescription": null,
+    "SurveyOwnerID": "UR_1MmbX0D3bAle6sR",
+    "SurveyBrandID": "umd",
+    "DivisionID": null,
+    "SurveyLanguage": "EN",
+    "SurveyActiveResponseSet": "RS_0kzni4mqsdYYSMZ",
+    "SurveyStatus": "Inactive",
+    "SurveyStartDate": "0000-00-00 00:00:00",
+    "SurveyExpirationDate": "0000-00-00 00:00:00",
+    "SurveyCreationDate": "2020-09-26 12:59:59",
+    "CreatorID": "UR_1MmbX0D3bAle6sR",
+    "LastModified": "2020-09-26 13:05:00",
+    "LastAccessed": "0000-00-00 00:00:00",
+    "LastActivated": "0000-00-00 00:00:00",
+    "Deleted": null
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": [
+        {
+          "Type": "Default",
+          "Description": "Introduction Block",
+          "ID": "BL_cvxoPps3HflxlsN",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID1"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID2"
+            }
+          ]
+        },
+        {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_0IH9ow1MoCfyMW9"
+        },
+        {
+          "Type": "Standard",
+          "SubType": "",
+          "Description": "Intruder Experiment",
+          "ID": "BL_2soHZqi6foVxie1",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID3"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID4"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID5"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID6"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID7"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "RandomWithOnlyX",
+            "Randomization": {
+              "Advanced": {
+                "TotalRandSubset": "25",
+                "QuestionsPerPage": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Flow": [
+          {
+            "ID": "BL_cvxoPps3HflxlsN",
+            "Type": "Block",
+            "FlowID": "FL_2"
+          },
+          {
+            "ID": "BL_2soHZqi6foVxie1",
+            "Type": "Standard",
+            "FlowID": "FL_3"
+          }
+        ],
+        "Properties": {
+          "Count": 3
+        },
+        "FlowID": "FL_1",
+        "Type": "Root"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "BackButton": "false",
+        "SaveAndContinue": "true",
+        "SurveyProtection": "PublicSurvey",
+        "BallotBoxStuffingPrevention": "false",
+        "NoIndex": "Yes",
+        "SecureResponseFiles": "true",
+        "SurveyExpiration": "None",
+        "SurveyTermination": "DefaultMessage",
+        "Header": "",
+        "Footer": "",
+        "PartialData": "+1 week",
+        "ValidationMessage": "",
+        "PreviousButton": " \u2190 ",
+        "NextButton": " \u2192 ",
+        "SurveyTitle": "Online Survey Software | Qualtrics Survey Solutions",
+        "SkinLibrary": "umd",
+        "SkinType": "MQ",
+        "Skin": "umd2_new",
+        "NewScoring": 1,
+        "QuestionsPerPage":"5",
+        "ProgressBarDisplay":"Text"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SCO",
+      "PrimaryAttribute": "Scoring",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "ScoringCategories": [],
+        "ScoringCategoryGroups": [],
+        "ScoringSummaryCategory": null,
+        "ScoringSummaryAfterQuestions": 0,
+        "ScoringSummaryAfterSurvey": 0,
+        "DefaultScoringCategory": null,
+        "AutoScoringCategory": null
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "PROJ",
+      "PrimaryAttribute": "CORE",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": "1.1.0",
+      "Payload": {
+        "ProjectCategory": "CORE",
+        "SchemaVersion": "1.1.0"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "STAT",
+      "PrimaryAttribute": "Survey Statistics",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "MobileCompatible": true,
+        "ID": "Survey Statistics"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "5",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "RS",
+      "PrimaryAttribute": "RS_0kzni4mqsdYYSMZ",
+      "SecondaryAttribute": "Default Response Set",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": "Instructions In this survey you will be be given a list of words generated from a computer model....",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<span style=\"font-weight: bolder;\">Instructions</span><br>In this survey you will be be given a list of words generated from a computer model. Your task is to identify which one of these words is the&nbsp;<span style=\"font-weight: bolder;\">least</span>&nbsp;related to all the other words. Here is an example:<br>\"baby\", \"crib\", \"diaper\", \"beer\", \"pacifier\", \"cry\"<br>In this example the word 'beer' is the&nbsp;least&nbsp;related. All of the other words are closely related to each other, and related to infants.<br><br><div>Here is another, harder, example:</div><div>\"Hard Drive\", \"motherboard\", \"video card\", \"processor\", \"RAM\", \"USB key\"</div><div>All of these terms are related to a computer, but all but 1 of them are components inside of a computer and the correct answer is 'USB key'.</div><div><br></div><div>You may not always know all the words and that's okay.<span style=\"font-weight: bolder;\">&nbsp;Please use only your existing knowledge and do not look up information in dictionaries or on the web.</span></div>",
+        "DefaultChoices": false,
+        "DataExportTag": "Q2",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Instructions In this survey you will be be given a list of words generated from a computer model....",
+        "ChoiceOrder": [],
+        "Validation": {
+          "Settings": {
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "QuestionID": "QID2"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.\u00a0Researcher..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.&nbsp;Researchers in all fields commonly have a lot of documents to explore. One common way to explore these documents is to organize them into different categories.<div>For example, a set of news articles might be organized into a set of Sports, Politics and Entertainment categories.</div><div><br></div><div>Organizing these documents by hand can take a lot of time which is why researches explore ways of to do this automatically.</div><div>In this study, you will be asked to evaluate the quality of the outputs of one of these automatic categorization models across 3 different datasets.<br><br>This study should take approximately 10-15 minutes to complete.<br><br>Your response will be completely anonymous.</div>",
+        "DefaultChoices": false,
+        "DataExportTag": "Q1",
+        "QuestionID": "QID1",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.\u00a0Researcher...",
+        "ChoiceOrder": [],
+        "Validation": {
+          "Settings": {
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.\u00a0Researcher..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DefaultChoices": false,
+        "DataExportTag": "topics_1_1",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "0": {
+            "Display": "a"
+          },
+          "1": {
+            "Display": "b"
+          },
+          "2": {
+            "Display": "c"
+          },
+          "3": {
+            "Display": "d"
+          },
+          "4": {
+            "Display": "e"
+          },
+          "5": {
+            "Display": "f"
+          }
+        },
+        "ChoiceOrder": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID3"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID4",
+      "SecondaryAttribute": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.\u00a0Researcher..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DefaultChoices": false,
+        "DataExportTag": "topics_2_2",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "0": {
+            "Display": "aa"
+          },
+          "1": {
+            "Display": "bb"
+          },
+          "2": {
+            "Display": "cc"
+          },
+          "3": {
+            "Display": "dd"
+          },
+          "4": {
+            "Display": "ee"
+          },
+          "5": {
+            "Display": "ff"
+          }
+        },
+        "ChoiceOrder": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID4"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID5",
+      "SecondaryAttribute": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.\u00a0Researcher..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DefaultChoices": false,
+        "DataExportTag": "topics_3_3",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "0": {
+            "Display": "aaa"
+          },
+          "1": {
+            "Display": "bbb"
+          },
+          "2": {
+            "Display": "ccc"
+          },
+          "3": {
+            "Display": "ddd"
+          },
+          "4": {
+            "Display": "eee"
+          },
+          "5": {
+            "Display": "fff"
+          }
+        },
+        "ChoiceOrder": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID5"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID6",
+      "SecondaryAttribute": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.\u00a0Researcher..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DefaultChoices": false,
+        "DataExportTag": "topics_4_4",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "0": {
+            "Display": "aaaa"
+          },
+          "1": {
+            "Display": "bbbb"
+          },
+          "2": {
+            "Display": "cccc"
+          },
+          "3": {
+            "Display": "dddd"
+          },
+          "4": {
+            "Display": "eeee"
+          },
+          "5": {
+            "Display": "ffff"
+          }
+        },
+        "ChoiceOrder": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID6"
+      }
+    },
+    {
+      "SurveyID": "SV_5sXmuibskKlpHmJ",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID7",
+      "SecondaryAttribute": "This survey will ask you to evaluate the outputs of a Machine Learning computer model.\u00a0Researcher..",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Identify which word does not belong with the others",
+        "DefaultChoices": false,
+        "DataExportTag": "topics_5_5",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Identify which word does not belong with the others",
+        "Choices": {
+          "0": {
+            "Display": "aaaaa"
+          },
+          "1": {
+            "Display": "bbbbb"
+          },
+          "2": {
+            "Display": "ccccc"
+          },
+          "3": {
+            "Display": "ddddd"
+          },
+          "4": {
+            "Display": "eeeee"
+          },
+          "5": {
+            "Display": "fffff"
+          }
+        },
+        "ChoiceOrder": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "Randomization": {
+          "Advanced": null,
+          "Type": "All",
+          "TotalRandSubset": ""
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "GradingData": [],
+        "Language": [],
+        "NextChoiceId": 7,
+        "NextAnswerId": 1,
+        "QuestionID": "QID7"
+      }
+    }
+  ]
+}
