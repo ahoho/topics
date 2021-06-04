@@ -1,7 +1,6 @@
 # Project specific
 .vscode
 output
-philip
 data
 previous-human-evals
 runs/outputs
