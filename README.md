@@ -1,8 +1,16 @@
-# Soup Nuts
+# Is Automated Topic Model Evaluation Broken?
 
-A topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline: it's soup to nuts.
+Code and data to run experiments 
 
-For preprocessing, it relies on [spaCy](https://spacy.io/) to efficiently tokenize text, optionally merging together detected entities and other provided phrases (e.g. `New York` -> `New_York`). This addition has a big impact on topic readability.
+We introduce topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline.
+
+The package is still a work in process. As of now, only preprocessing is handled by a unified CLI installed via `poetry` (see below).
+
+Other steps have different requirements; models and analyses are associated with different conda environments. Running hyperparameter sweeps is also dependent on SLURM.
+
+# Preprocessing
+
+Preprocessing relies on [spaCy](https://spacy.io/) to efficiently tokenize text, optionally merging together detected entities and other provided phrases (e.g. `New York` -> `New_York`). This addition helps with topic readability.
 
 ## Installation
 
@@ -18,10 +26,12 @@ Then from the repository root, run
 $ poetry install --extras gensim
 ```
 
-Finally, you will need to download the spaCy models with
-
-```console
-$ python -m spacy download en_core_web_sm
-```
-
 Instructions for usage can be accessed with `soup-nuts --help`
+
+# Model estimation
+
+
+
+# Automated evaluation
+
+# Human evaluation
