@@ -1,6 +1,6 @@
 # Is Automated Topic Model Evaluation Broken?
 
-Code and data to run experiments 
+Code and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173).
 
 We introduce topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline.
 
