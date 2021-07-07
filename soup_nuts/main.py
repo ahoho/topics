@@ -104,6 +104,7 @@ def preprocess(
     ),
     jsonl_text_key: Optional[str] = None,
     jsonl_id_key: Optional[str] = None,
+    
 
     # Processing
     lowercase: bool = False,
@@ -222,6 +223,15 @@ def preprocess(
             "list (the default) or `none` to not remove stopwords"
         )
     ),
+    # TODO: whitespace tokenization option
+    passthrough: Optional[bool] = typer.Option(
+        False,
+        help=(
+            "Ignore all settings and whitespace tokenize "
+            "(vocabulary frequency filters can still be applied: "
+            "`vocabulary`, `min_doc_freq`, `max_doc_freq`, `max_vocab_size`) "
+        ),
+    ),
     encoding: str = "utf8",
     n_process: int = -1,
 ):
@@ -300,6 +310,7 @@ def preprocess(
         vocabulary=vocabulary,
         phrases=phrases,
         stopwords=stopwords,
+        passthrough=passthrough,
         total_docs=total_docs,
         retain_text=output_text,
         n_process=n_process,
@@ -321,6 +332,7 @@ def preprocess(
             lemmatize=lemmatize,
             vocabulary=terms,
             phrases=learned_phrases,
+            passthrough=passthrough,
             total_docs=total_val,
             retain_text=output_text,
             n_process=n_process,
@@ -338,9 +350,10 @@ def preprocess(
             lemmatize=lemmatize,
             vocabulary=terms,
             phrases=learned_phrases,
+            passhrough=passthrough,
             total_docs=total_test,
             retain_text=output_text,
-            n_process=2,
+            n_process=n_process,
         )
     # save out
     save_params(params, Path(output_dir, "params.json"))
