@@ -99,6 +99,7 @@ def docs_to_matrix(
     vocabulary: Optional[Union[Iterable[str], dict[str, int]]] = None,
     phrases: Optional[Iterable[str]] = None,
     stopwords: Optional[Iterable[str]] = None,
+    passthrough: bool = False,
     total_docs: Optional[int] = None,
     spacy_model: Union[Language, str] = 'en_core_web_sm',
     retain_text: bool = False,
@@ -125,6 +126,7 @@ def docs_to_matrix(
         vocabulary=vocabulary,
         phrases=phrases,
         stopwords=stopwords,
+        passthrough=passthrough,
         spacy_model=spacy_model,
         as_tuples=as_tuples,
         n_process=n_process,
@@ -183,6 +185,7 @@ def tokenize_docs(
     vocabulary: Optional[Iterable[str]] = None,
     phrases: Optional[Iterable[str]] = None,
     stopwords: Optional[Iterable[str]] = None,
+    passthrough: bool = False,
     spacy_model: Union[Language, str] = 'en_core_web_sm',
     as_tuples: bool = True,
     n_process: int = 1,
@@ -190,6 +193,17 @@ def tokenize_docs(
     """
     Tokenize a stream of documents. Tries to be performant by using nlp.pipe 
     """
+    # just whitespace tokenize
+    if passthrough:
+        for doc in docs:
+            if as_tuples:
+                doc, id = doc
+            tokens = doc.split()
+            if as_tuples:
+                tokens = tokens, id
+            yield tokens
+        return
+
     # initialize the spacy model if it's not already
     if isinstance(spacy_model, str):
         spacy_model = create_pipeline(
