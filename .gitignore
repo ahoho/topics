@@ -9,6 +9,9 @@ runs/tmp
 redundancy-experiments.ipynb
 runs/*.sh
 chang_2009/rtl_data
+analysis/_old_data
+collect-analyze-runs.ipynb
+analysis-sandbox.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -139,3 +142,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Added
+runs/etm_full-sweep.yml
+runs/glove_etm-sweep.yml
+runs/etm_update-sweep.yml
+runs/etm_train_embs-sweep.yml
+analysis/simple_simulation_results_weighted.csv
+analysis/simple_simulations_results_100k.csv
+analysis/simulation_results.csv
+analysis/simple_simulation_results_familiar.csv
+analysis/regression_results_familiar.csv
+analysis/correlation_results_familiar.csv
