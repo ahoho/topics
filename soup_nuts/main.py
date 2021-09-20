@@ -17,7 +17,7 @@ from .utils import (
     read_lines,
     save_lines,
     save_json,
-    save_dtm_as_jsonl,
+    save_jsonl,
     save_params,
 )
 
@@ -28,11 +28,6 @@ logger = logging.getLogger(__name__)
 
 class InputFormat(str, Enum):
     text: str = "text"
-    jsonl: str = "jsonl"
-
-
-class OutputFormat(str, Enum):
-    sparse: str = "sparse"
     jsonl: str = "jsonl"
 
 
@@ -87,24 +82,28 @@ def preprocess(
         InputFormat.text,
         help="Format of input file(s). If jsonlist, can specify an id variable",
     ),
-    output_format: OutputFormat = typer.Option(
-        OutputFormat.sparse,
-        help=(
-            "Format(s) in which to save the document-term matrix: "
-            "any mix of `sparse`, `jsonl`, and `text. "
-            "For `jsonl`, each row contains the document's id and word counts, "
-            "e.g. {'id': '0001', 'counts': {'apple': 2, 'cake': 1}. "
-            "`sparse` is a `scipy.sparse.csr.csr_matrix`, vocab & ids in separate files"
-        ),
-    ),
+
     output_text: bool = typer.Option(False, help="Also output processed text, in order"),
     lines_are_documents: bool = typer.Option(
         True,
         help="Treat each line in a file as a document (else, each file is a document). ",
     ),
     jsonl_text_key: Optional[str] = None,
-    jsonl_id_key: Optional[str] = None,
-    
+    jsonl_id_key: Optional[str] = typer.Option(
+        None,
+        help=(
+            "Unique document id for each row in a jsonl. "
+            "Will be generated automatically if not specified.",
+        ),
+    ),
+    jsonl_metadata_keys: Optional[str] = typer.Option(
+        None,
+        help=(
+            "Other keys to retain, which will be output in a jsonl file. "
+            "Separate with commas, e.g., `key1,key2,key3` "
+            "If using models with knowledge distillation, include raw text"
+        ),
+    ),
 
     # Processing
     lowercase: bool = False,
@@ -222,7 +221,7 @@ def preprocess(
             "Filepath of stopwords, one word per line. Set to `english` to use spaCy "
             "list (the default) or `none` to not remove stopwords"
         )
-    ),
+    ),  
     # TODO: whitespace tokenization option
     passthrough: Optional[bool] = typer.Option(
         False,
@@ -257,9 +256,10 @@ def preprocess(
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
         if jsonl_text_key is None:
             raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
-        docs = read_jsonl(input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
-        val_docs = read_jsonl(val_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
-        test_docs = read_jsonl(test_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding)
+        jsonl_metadata_keys = jsonl_metadata_keys.split(",") if jsonl_metadata_keys else None
+        docs = read_jsonl(input_path, jsonl_text_key, jsonl_id_key, jsonl_metadata_keys, max_doc_size, encoding)
+        val_docs = read_jsonl(val_path, jsonl_text_key, jsonl_id_key, jsonl_metadata_keys, max_doc_size, encoding)
+        test_docs = read_jsonl(test_path, jsonl_text_key, jsonl_id_key, jsonl_metadata_keys, max_doc_size, encoding)
 
     if vocabulary and (detect_entities or detect_noun_chunks):
         logger.warn(
@@ -292,7 +292,7 @@ def preprocess(
 
     # create the document-term matrix
     logger.info("Processing train data")
-    dtm, terms, ids, text = docs_to_matrix(
+    dtm, terms, metadata = docs_to_matrix(
         docs,
         lowercase=lowercase,
         ngram_range=ngram_range,
@@ -319,9 +319,11 @@ def preprocess(
     if val_path or test_path:
         # on second pass, keep only _learned_ phrases
         learned_phrases = [v for v in terms if ("_" in v or "-" in v) and v not in (vocabulary or [])]
+
+    # TODO: create data with a single function, then loop through the train/val/test splits
     if val_path:
         logger.info("Processing validation data")
-        val_dtm, _, val_ids, val_text = docs_to_matrix(
+        val_dtm, _, val_metadata = docs_to_matrix(
             val_docs,
             lowercase=lowercase,
             ngram_range=ngram_range,
@@ -339,7 +341,7 @@ def preprocess(
         )
     if test_path:
         logger.info("Processing test data")
-        test_dtm, _, test_ids, test_text = docs_to_matrix(
+        test_dtm, _, test_metadata = docs_to_matrix(
             test_docs,
             lowercase=lowercase,
             ngram_range=ngram_range,
@@ -355,31 +357,21 @@ def preprocess(
             retain_text=output_text,
             n_process=n_process,
         )
-    # save out
+    # save outputs
     save_params(params, Path(output_dir, "params.json"))
+    save_json(terms, Path(output_dir, "vocab.json"), indent=2)
 
-    if output_format.value == "sparse":
-        sparse.save_npz(Path(output_dir, "train.dtm.npz"), dtm)
-        save_json(terms, Path(output_dir, "vocab.json"), indent=2)
-        save_json(ids, Path(output_dir, "train.ids.json"), indent=2)
-        if val_path:
-            sparse.save_npz(Path(output_dir, "val.dtm.npz"), val_dtm)
-            save_json(val_ids, Path(output_dir, "val.ids.json"), indent=2)
-        if test_path:
-            sparse.save_npz(Path(output_dir, "test.dtm.npz"), test_dtm)
-            save_json(test_ids, Path(output_dir, "test.ids.json"), indent=2)
-    if output_format.value == "jsonl":
-        save_dtm_as_jsonl(dtm, terms, ids, Path(output_dir, "train.data.jsonl"))
-        if val_path:
-            save_dtm_as_jsonl(val_dtm, terms, val_ids, Path(output_dir, "val.data.jsonl"))
-        if test_path:
-            save_dtm_as_jsonl(test_dtm, terms, test_ids, Path(output_dir, "test.data.jsonl"))
-    if output_text:
-        save_lines(text, Path(output_dir, "train.txt"))
-        if val_path:
-            save_lines(val_text, Path(output_dir, "val.txt"))
-        if test_path:
-            save_lines(test_text, Path(output_dir, "test.txt"))
+    # creates, for each split,
+    # - a sparse matrix
+    # - a jsonl containing metadata (at the very lease, ids), one row per document
+    sparse.save_npz(Path(output_dir, "train.dtm.npz"), dtm)
+    save_jsonl(metadata, Path(output_dir, "train.metadata.jsonl"))
+    if val_path:
+        sparse.save_npz(Path(output_dir, "val.dtm.npz"), val_dtm)
+        save_jsonl(val_metadata, Path(output_dir, "val.metadata.jsonl"))
+    if test_path:
+        sparse.save_npz(Path(output_dir, "test.dtm.npz"), test_dtm)
+        save_jsonl(test_metadata, Path(output_dir, "test.metadata.jsonl"))
 
 
 def connector_words_callback(value: str) -> Iterable[str]:

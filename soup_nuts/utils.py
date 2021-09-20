@@ -7,8 +7,6 @@ from typing import Union, Any, Optional
 from pathlib import Path
 
 from scipy import sparse
-import scipy
-from typer.models import NoneType
 
 logger = logging.getLogger(__name__)
 
@@ -76,31 +74,39 @@ def save_params(params: dict[str, Any], fpath: Union[str, Path]):
     save_json(safe_params, fpath, indent=2)
 
 
-def save_dtm_as_jsonl(
-    dtm: sparse.csr.csr_matrix,
-    vocab: dict[str, int],
-    ids: list[str],
+def save_jsonl(
+    metadata: list[dict[str, Any]],
     outpath: Union[str, Path],
+    dtm: Optional[sparse.csr.csr_matrix] = None,
+    vocab: Optional[dict[str, int]] = None,
 ):
     """
-    Save document-term matrix as a dictionary in the following format, where each
+    Save a list of dictionaries to a jsonl file. If `dtm` and `vocab` are provided,
+    save document-term matrix as a dictionary in the following format, where each
     row is a document:
     {
         "id": <doc_1>,
-        "counts": {
+        <other metadata>: ...
+        "tokenized_counts": {
             <word_2>: <count_of_word_2_in_doc_1>,
             <word_6>: <count_of_word_6_in_doc_1>,
             ...
         },
     }
     """
+    if dtm is not None and vocab is None:
+        raise ValueError("`vocab` must be provided if `dtm` is provided")
+
     inv_vocab = dict(zip(vocab.values(), vocab.keys()))
     with open(outpath, mode="w") as outfile:
-        for i, (row, id) in enumerate(zip(dtm, ids)):
-            words_in_doc = [inv_vocab[idx] for idx in row.indices]
-            counts = [int(v) for v in row.data]  # int64 not serializable
-            word_counts = dict(zip(words_in_doc, counts))
-            row_json = json.dumps({"id": id, "counts": word_counts})
+        for i, data in enumerate(metadata):
+            if dtm is not None:
+                row = dtm[i]
+                words_in_doc = [inv_vocab[idx] for idx in row.indices]
+                counts = [int(v) for v in row.data]  # int64 not serializable
+                word_counts = dict(zip(words_in_doc, counts))
+                data.update({"tokenized_counts": word_counts})
+            row_json = json.dumps(data)
             if i == 0:
                 outfile.write(row_json)
             else:

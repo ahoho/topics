@@ -25,7 +25,7 @@ def read_docs(
     lines_are_documents: bool = True,
     max_doc_size: Optional[int] = None,
     encoding: str = "utf-8", # TODO: change to system default?
-) -> Iterator[tuple[str, str]]:
+) -> Iterator[tuple[str, dict]]:
     """
     Lazily read in contents of files.
     """
@@ -36,20 +36,21 @@ def read_docs(
             if lines_are_documents:
                 for i, text in enumerate(infile):
                     if text:
-                        yield _truncate_doc(text, max_doc_size), f"{path}:{i:09}"
+                        yield _truncate_doc(text, max_doc_size), {"id": f"{path}:{i:09}"}
             else:
                 text = infile.read().strip()
                 if text:
-                    yield _truncate_doc(text, max_doc_size), f"{path}"
+                    yield _truncate_doc(text, max_doc_size), {"id": f"{path}"}
 
 
 def read_jsonl(
     paths: Union[Union[Path, str], list[Union[Path, str]]],
     text_key: str = "text",
     id_key: Optional[str] = None,
+    other_keys: Optional[list[str]] = None,
     max_doc_size: Optional[int] = None,
     encoding: str = "utf-8",
-) -> Iterator[tuple[str, str]]:
+) -> Iterator[tuple[str, dict]]:
     """
     Lazily read in contents of jsonlist files.
     """
@@ -61,9 +62,13 @@ def read_jsonl(
             for i, line in enumerate(infile):
                 if line:
                     data = json.loads(line)
+                    text = data[text_key].replace("\n", " ") # remove linebreaks
+
                     id = str(data[id_key]) if id_key else f"{path}:{i:09}"
-                    text = data[text_key]#.replace("\n", " ") # remove linebreaks
-                    yield _truncate_doc(text, max_doc_size), id
+                    metadata = {"id": id}
+                    if other_keys is not None:
+                        metadata.update({k: data[k] for k in other_keys})
+                    yield _truncate_doc(text, max_doc_size), metadata
 
 
 def _truncate_doc(
@@ -105,7 +110,7 @@ def docs_to_matrix(
     retain_text: bool = False,
     as_tuples: bool = True,
     n_process: int = 1,
-) -> tuple[sparse.csr.csr_matrix, dict[str, int], list[str]]:
+) -> tuple[sparse.csr.csr_matrix, dict[str, int], list[dict]]:
     """
     Create a document-term matrix for a list of documents
     """
@@ -132,7 +137,7 @@ def docs_to_matrix(
         n_process=n_process,
     )
     if not as_tuples: # add ids if none were used
-        doc_tokens = ((doc, i) for i, doc in enumerate(doc_tokens))
+        doc_tokens = ((doc, {"id": i}) for i, doc in enumerate(doc_tokens))
     if retain_text:
         # Store in memory as list. TODO: cache in a temporary file instead
         doc_tokens = [doc for doc in tqdm(doc_tokens, total=total_docs)]
@@ -141,34 +146,33 @@ def docs_to_matrix(
 
     # CountVectorizer is considerably faster than gensim for creating the doc-term mtx
     # TODO: still need to change to gensim since it will prune large vocabularies live
-    cv = CountVectorizerWithID(
+    cv = CountVectorizerWithMetadata(
         preprocessor=lambda x: x,
         analyzer=lambda x: x,
         min_df=float(min_doc_freq) if min_doc_freq < 1 else int(min_doc_freq),
         max_df=float(max_doc_freq) if max_doc_freq <=1 else int(max_doc_freq),
-        max_features=max_vocab_size,#TODO, fix how we describe this param
+        max_features=max_vocab_size,
         vocabulary=vocabulary,
     )
     dtm = cv.fit_transform(doc_tokens)
     # sort and convert to a python (not numpy) int for saving
     vocab = {k: int(v) for k, v in sorted(cv.vocabulary_.items(), key=lambda kv: kv[1])}
-    ids = cv.ids
+    metadata = cv.metadata
     if retain_text:
-        doc_tokens = [
-            " ".join(w for w in doc if w in vocab) # removes words not meeting frequency thresholds
-            for doc, i in doc_tokens
+        assert(len(doc_tokens) == dtm.shape[0] == len(metadata))
+        metadata = [
+            {**data, "tokenized_text": " ".join(w for w in doc if w in vocab)}
+            for data, (doc, _) in zip(metadata, doc_tokens)
         ]
-        assert(len(doc_tokens) == dtm.shape[0])
 
     # filter-out short documents
     doc_counts = np.array(dtm.sum(1)).squeeze()
     if doc_counts.min() < min_doc_size:
         docs_to_keep = doc_counts  >= min_doc_size
         dtm = dtm[docs_to_keep]
-        ids = [doc_id for idx, doc_id in enumerate(ids) if docs_to_keep[idx]]
-        doc_tokens = [toks for idx, toks in enumerate(doc_tokens) if docs_to_keep[idx]]
+        metadata = [md for idx, md in enumerate(metadata) if docs_to_keep[idx]]
 
-    return dtm, vocab, ids, doc_tokens
+    return dtm, vocab, metadata
             
 
 def tokenize_docs(
@@ -341,13 +345,13 @@ def create_pipeline(
     return nlp
 
 
-class CountVectorizerWithID(CountVectorizer):
+class CountVectorizerWithMetadata(CountVectorizer):
     def fit_transform(
         self,
         raw_documents: Iterable[tuple[str, str]],
     ) -> sparse.csr.csr_matrix:
         """
-        Allows us to collect the document ids during processing while still maintaining
+        Allows us to collect the document metadata during processing while still maintaining
         a lazy generator
         """
         docs = self.doc_iterator(raw_documents)
@@ -357,7 +361,7 @@ class CountVectorizerWithID(CountVectorizer):
         self,
         raw_documents: Iterable[tuple[str, str]],
     ) -> Iterable[str]:
-        self.ids = []
-        for doc, id in raw_documents:
-            self.ids.append(id)
+        self.metadata = []
+        for doc, data in raw_documents:
+            self.metadata.append(data)
             yield doc
