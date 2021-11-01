@@ -94,13 +94,16 @@ def save_jsonl(
         },
     }
     """
+
     if dtm is not None and vocab is None:
         raise ValueError("`vocab` must be provided if `dtm` is provided")
 
-    inv_vocab = dict(zip(vocab.values(), vocab.keys()))
+    if vocab is not None : 
+        inv_vocab = dict(zip(vocab.values(), vocab.keys()))
+    
     with open(outpath, mode="w") as outfile:
         for i, data in enumerate(metadata):
-            if dtm is not None:
+            if dtm is not None and vocab is not None:
                 row = dtm[i]
                 words_in_doc = [inv_vocab[idx] for idx in row.indices]
                 counts = [int(v) for v in row.data]  # int64 not serializable

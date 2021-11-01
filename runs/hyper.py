@@ -15,7 +15,7 @@ import yaml
 
 try:
     import git
-    _git_available = True
+    _git_available = False
 except ImportError:
     warnings.warn("`GitPython` not available, so no git log will be saved")
     _git_available = False

@@ -5,6 +5,7 @@ data
 previous-human-evals
 runs/outputs
 runs/results
+runs/outputs_256
 runs/tmp
 redundancy-experiments.ipynb
 runs/*.sh
