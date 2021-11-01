@@ -7,6 +7,7 @@ runs/outputs
 runs/results
 runs/outputs_256
 runs/tmp
+runs/mallet-sweep-test.yml
 redundancy-experiments.ipynb
 runs/*.sh
 chang_2009/rtl_data

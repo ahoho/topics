@@ -3,7 +3,7 @@ job_name: "mallet"
 ## These will be populated by the code
 # Note the pipe | before `slurm_header` is necessary to parse as separate lines
 templates:
-    command: "export PATH=$PATH:/workspace/.conda/envs/gensim/bin && export JAVA_HOME=/workspace/.conda/envs/gensim && /workspace/.conda/envs/gensim/bin/python /workspace/rupak/topics/soup_nuts/models/gensim/lda.py --config {config_path} --output_dir {output_dir}/"
+    command: "export PATH=$PATH:/workspace/.conda/envs/gensim/bin && export JAVA_HOME=/workspace/.conda/envs/gensim && /workspace/.conda/envs/gensim/bin/python /workspace/topics/soup_nuts/models/gensim/lda.py --config {config_path} --output_dir {output_dir}/"
     slurm_header: |
         #!/bin/bash
         #SBATCH --array=0-{n_jobs}%30
@@ -18,8 +18,8 @@ templates:
 ## Hyperparams
 hyper:
     input_dir: {
-        "/workspace/rupak/topics/data/nytimes/processed/full-mindf_power_law-maxdf_0.9": "nytimes",
-        "/workspace/rupak/topics/data/wikitext/processed/full-mindf_power_law-maxdf_0.9": "wikitext",
+        "/workspace/topics/data/nytimes/processed/full-mindf_power_law-maxdf_0.9": "nytimes",
+        "/workspace/topics/data/wikitext/processed/full-mindf_power_law-maxdf_0.9": "wikitext",
     }
     alpha: [0.01, 0.05, 0.1, 0.25, 1.0, 5.0] 
     beta: [0.01, 0.05, 0.1]
@@ -30,7 +30,7 @@ hyper:
 # Optional: specify directories or filenames of code which will be copied to the ouput dir for posterity
 # Git hashes will also be saved, if available, for these directories
 code_locations:
-    - /workspace/rupak/topics/soup_nuts/models/gensim/
+    - /workspace/topics/soup_nuts/models/gensim/
 
 
 # defaults
