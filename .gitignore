@@ -144,6 +144,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+<<<<<<< HEAD
 
 # Added
 runs/etm_full-sweep.yml
@@ -156,3 +157,5 @@ analysis/simulation_results.csv
 analysis/simple_simulation_results_familiar.csv
 analysis/regression_results_familiar.csv
 analysis/correlation_results_familiar.csv
+=======
+>>>>>>> d3a9806f38d04d63f3c05c95cf415ae7689af893
