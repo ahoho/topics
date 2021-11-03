@@ -93,7 +93,7 @@ def preprocess(
         None,
         help=(
             "Unique document id for each row in a jsonl. "
-            "Will be generated automatically if not specified.",
+            "Will be generated automatically if not specified."
         ),
     ),
     jsonl_metadata_keys: Optional[str] = typer.Option(
