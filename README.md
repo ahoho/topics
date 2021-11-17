@@ -57,7 +57,7 @@ Below, we outline how to run a single mallet model on some example data.
 After installing `poetry` and miniconda (see above), clone the repo, create the environment and install the packages.
 
 ```console
-$ git clone git@github.com:ahoho/topics.git --recurse-submodules
+$ git clone https://github.com/ahoho/topics.git --recurse-submodules
 $ conda create -n soup-nuts python=3.9
 $ conda activate soup-nuts
 $ poetry install --extras gensim
