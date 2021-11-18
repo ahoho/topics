@@ -93,6 +93,7 @@ Then we need to create a new python environment to run it:
 $ cd soup_nuts/models/gensim
 $ conda create -n mallet python=3.9
 $ conda env update -n mallet --file gensim.yml
+$ conda activate mallet
 ```
 
 Finally, from the top-level directory, we run the model with
