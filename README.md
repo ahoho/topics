@@ -1,10 +1,10 @@
 # Is Automated Topic Model Evaluation Broken?
 
-Code and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173).
+Code and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173). Note that the [dev](https://github.com/ahoho/topics/tree/dev) branch is our "working" branch, which has a slightly improved preprocessing API and more complete instructions, although it may not be able to exactly reproduce paper results.
 
-We introduce topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline.
+We're working on writing up the series of steps to reproduce the results in the paper. Please create an issue if we haven't made progress on this!
 
-The package is still a work in process. As of now, only preprocessing is handled by a unified CLI installed via `poetry` (see below).
+The full topic-modeling package is still a work in process. As of now, only preprocessing is handled by a unified CLI installed via `poetry` (see below).
 
 Other steps have different requirements; models and analyses are associated with different conda environments. Running hyperparameter sweeps is also dependent on SLURM.
 
@@ -13,8 +13,6 @@ Other steps have different requirements; models and analyses are associated with
 Preprocessing relies on [spaCy](https://spacy.io/) to efficiently tokenize text, optionally merging together detected entities and other provided phrases (e.g. `New York` -> `New_York`). This addition helps with topic readability.
 
 ## Installation
-
-These instructions are temporary since this project is still in early development.
 
 To install, you first need to get [`poetry`](https://python-poetry.org/docs/).
 
@@ -28,9 +26,9 @@ $ poetry install --extras gensim
 
 Instructions for usage can be accessed with `soup-nuts --help`
 
+If you have trouble using poetry and need to install packages manually (meaning `soup-nuts` is no longer on your path), then you can run as a module with `python -m soup_nuts.main`.
+
 # Model estimation
-
-
 
 # Automated evaluation
 
