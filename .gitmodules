@@ -7,3 +7,6 @@
 [submodule "soup_nuts/models/gensim"]
 	path = soup_nuts/models/gensim
 	url = https://github.com/ahoho/gensim-runner
+[submodule "soup_nuts/models/contextualized-topic-models"]
+	path = soup_nuts/models/contextualized-topic-models
+	url = git@github.com:styx97/contextualized-topic-models.git
