@@ -44,6 +44,11 @@ def read_lines(path: Union[Path, str], encoding: str = "utf-8") -> list[str]:
         return [line for line in infile if line.strip()]
 
 
+def read_json(path: Union[Path, str], encoding: str = "utf-8") -> Union[list,dict]:
+    with open(path, encoding=encoding) as infile:
+        return json.load(infile)
+
+
 def save_lines(obj: Iterable, fpath: Union[str, Path]):
     with open(fpath, "w") as outfile:
         for i, x in enumerate(obj):
