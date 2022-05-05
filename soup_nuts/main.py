@@ -15,6 +15,7 @@ from .utils import (
     expand_paths,
     get_total_lines,
     read_lines,
+    read_json,
     save_lines,
     save_json,
     save_jsonl,
@@ -287,7 +288,12 @@ def preprocess(
         total_test = get_total_lines(test_path, encoding=encoding)
 
     # load external wordlist files
-    vocabulary = read_lines(vocabulary, encoding) if vocabulary else None
+    if vocabulary is not None:
+        if Path(vocabulary).suffix.endswith("json"):
+            vocabulary = read_json(vocabulary, encoding)
+        else:
+            vocabulary = read_lines(vocabulary, encoding)
+        logger.info(f"Using existing vocabulary of size {len(vocabulary)}")
     phrases = read_lines(phrases, encoding) if phrases else None
 
     # create the document-term matrix
