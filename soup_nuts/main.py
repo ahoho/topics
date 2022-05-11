@@ -358,7 +358,7 @@ def preprocess(
             lemmatize=lemmatize,
             vocabulary=terms,
             phrases=learned_phrases,
-            passhrough=passthrough,
+            passthrough=passthrough,
             total_docs=total_test,
             retain_text=output_text,
             n_process=n_process,
