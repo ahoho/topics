@@ -21,7 +21,7 @@ To install, you first need to get [`poetry`](https://python-poetry.org/docs/).
 Then from the repository root, run
 
 ```console
-$ poetry install --extras gensim
+$ poetry install
 ```
 
 Instructions for usage can be accessed with `soup-nuts --help`
