@@ -322,7 +322,7 @@ if __name__ == "__main__":
         base_config_yml_path=args.base_config_yml_path,
         random_runs=args.random_runs,
         skip_if_file_exists=args.skip_if_file_exists,
-        params_to_group=args.params_to_group.split(","),
+        params_to_group=params_to_group,
         dry_run=args.dry_run,
         seed=args.seed,
     )
