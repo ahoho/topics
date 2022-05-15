@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Union, Optional
 
 import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, _document_frequency
 from scipy import sparse
 from tqdm import tqdm
 
@@ -93,6 +93,7 @@ def docs_to_matrix(
     min_doc_freq: float = 1.0,
     max_doc_freq: float = 1.0,
     max_vocab_size: Optional[float] = None,
+    limit_vocab_by_df: bool = False,
     detect_entities: bool = False,
     detect_noun_chunks: bool = False,
     double_count_phrases: bool = True,
@@ -152,6 +153,7 @@ def docs_to_matrix(
         min_df=float(min_doc_freq) if min_doc_freq < 1 else int(min_doc_freq),
         max_df=float(max_doc_freq) if max_doc_freq <=1 else int(max_doc_freq),
         max_features=max_vocab_size,
+        limit_vocab_by_df=limit_vocab_by_df,
         vocabulary=vocabulary,
     )
     dtm = cv.fit_transform(doc_tokens)
@@ -346,6 +348,10 @@ def create_pipeline(
 
 
 class CountVectorizerWithMetadata(CountVectorizer):
+    def __init__(self, *args, **kwargs):
+        self.limit_vocab_by_df = kwargs.pop("limit_vocab_by_df", False)
+        super().__init__(*args, **kwargs)
+
     def fit_transform(
         self,
         raw_documents: Iterable[tuple[str, str]],
@@ -365,3 +371,15 @@ class CountVectorizerWithMetadata(CountVectorizer):
         for doc, data in raw_documents:
             self.metadata.append(data)
             yield doc
+
+    def _limit_features(self, X, vocabulary, high=None, low=None, limit=None):
+        """
+        If `limit` is defined, will select
+        the top terms by document-frequency rather than term-frequency
+        """
+        if self.limit_vocab_by_df and limit is not None and limit <= X.shape[1]:
+            dfs = _document_frequency(X)
+            limit_idx = np.argsort(-dfs)[limit]
+            low = dfs[limit_idx]
+        
+        return super()._limit_features(X, vocabulary, high, low, limit)

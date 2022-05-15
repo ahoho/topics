@@ -151,7 +151,11 @@ def preprocess(
     max_vocab_size: Optional[int] = typer.Option(
         None,
         min=0,
-        help="Maximum size of the vocabulary."
+        help="Maximum size of the vocabulary, sorted by term-frequency by default."
+    ),
+    limit_vocab_by_df: bool = typer.Option(
+        True,
+        help="If using `max_vocab_size`, sort by doc-frequency rather than term-frequency."
     ),
     detect_entities: bool = typer.Option(
         False,
@@ -305,6 +309,7 @@ def preprocess(
         min_doc_freq=min_doc_freq,
         max_doc_freq=max_doc_freq,
         max_vocab_size=max_vocab_size,
+        limit_vocab_by_df=limit_vocab_by_df,
         detect_entities=detect_entities,
         detect_noun_chunks=detect_noun_chunks,
         double_count_phrases=double_count_phrases,
