@@ -17,8 +17,12 @@ To install, you first need to get [`poetry`](https://python-poetry.org/docs/).
 Then from the repository root, run
 
 ```console
-$ poetry install --extras gensim
+$ poetry install
 ```
+
+(If you would like statistical phrase detection with `soup-nuts detect-phrases`!, include the flag `--extras gensim`. Note that this requires GCC/g++)
+
+Check the installation with `soup-nuts --help`.
 
 As stated above, models need their own environments. Requirements are in the `.yml` files in each of the `soup_nuts/models/<model_name>` directories, and can be installed with
 
@@ -37,7 +41,7 @@ Preprocessing relies on [spaCy](https://spacy.io/) to efficiently tokenize text,
 Instructions for usage can be accessed with `soup-nuts preprocess --help`. Some models and settings are not yet fully integrated in the pipeline, and require additional steps or specific flags, as described below (NB: they also introduce some redundancy in the data. If you will only be using `scholar` and are short on space, feel free to delete intermediate files)
 
 - **`scholar`** model
-    - For `soup-nuts preprocess`, use these flags: `--output-format jsonl --retain-text`
+    - For `soup-nuts preprocess`, use these flags: `--retain-text`
     - `scholar` requires a specific input format. Run the python script `data/convert_processed_data_to_scholar_format.py` (dependencies are in `soup_nuts/models/scholar/scholar.yml`).
 - **Covariates/labels** (currently only supported in `scholar`)
     - For `soup-nuts preprocess`, specify labels/covariates with these flags: `--input-format jsonl --jsonl-text-key <your_text_key> --output-format jsonl --jsonl-metadata-keys <key1,key2,key3,...>` (in addition to steps for `scholar`)
