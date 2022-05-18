@@ -1,16 +1,27 @@
-# Soup-to-Nuts Topic Modeling
+# Is Automated Topic Model Evaluation Broken?
 
-We introduce a topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline.
+Code and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173). Do not hesitate to create an issue or email us if you have problems!
 
-The package is still a work in process. As of now, only preprocessing is handled by a unified CLI installed via `poetry` (see below).
+Please cite us if you find this package useful
 
-Other steps have different requirements; models and analyses are associated with different conda environments. Running hyperparameter sweeps is also dependent on SLURM.
+```
+@inproceedings{hoyle-etal-2021-automated,
+    title = "Is Automated Topic Evaluation Broken? The Incoherence of Coherence",
+    author = "Hoyle, Alexander Miserlis  and
+      Goel, Pranav  and
+      Hian-Cheong, Andrew and
+      Peskov, Denis and
+      Boyd-Graber, Jordan and
+      Resnik, Philip",
+    booktitle = "Advances in Neural Information Processing Systems",
+    year = "2021",
+    url = "https://arxiv.org/abs/2107.02173",
+}
+```
 
 # Installation
-
-These instructions are temporary since this project is still in early development.
-
-To install, you first need to get [`poetry`](https://python-poetry.org/docs/).
+## Preprocessing and metrics
+To install the preprocessing and metric evaluation package (called `soup-nuts`), you first need to get [`poetry`](https://python-poetry.org/docs/).
 
 `poetry` can create virtual environments automatically, but will also detect any activated virtual environment and use that instead (e.g., if you are using [conda](https://docs.conda.io/en/latest/miniconda.html), run `conda create -n soup-nuts python=3.9 && conda activate soup-nuts`).
 
@@ -20,11 +31,16 @@ Then from the repository root, run
 $ poetry install
 ```
 
-(If you would like statistical phrase detection with `soup-nuts detect-phrases`!, include the flag `--extras gensim`. Note that this requires GCC/g++)
+Check the installation with 
 
-Check the installation with `soup-nuts --help`.
+```console
+soup-nuts --help
+```
 
-As stated above, models need their own environments. Requirements are in the `.yml` files in each of the `soup_nuts/models/<model_name>` directories, and can be installed with
+If you do not use poetry, or you have issues with installation, you can run with `python -m soup_nuts.main <command name>`
+
+## Models
+Models need their own environments. Requirements are in the `.yml` files in each of the `soup_nuts/models/<model_name>` directories, and can be installed with
 
 ```console
 conda env create -f <environment_name>.yml
@@ -32,13 +48,95 @@ conda env create -f <environment_name>.yml
 
 (names for each are set in the first line of each `yml` file, and can be changed as needed)
 
-# Preprocessing
+# Use 
+## Preprocessing
 
 Preprocessing relies on [spaCy](https://spacy.io/) to efficiently tokenize text, optionally merging together detected entities and other provided phrases (e.g. `New York` -> `New_York`). This addition helps with topic readability.
 
-## Running preprocessing
+Thorough instructions for usage can be accessed with 
 
-Instructions for usage can be accessed with `soup-nuts preprocess --help`. Some models and settings are not yet fully integrated in the pipeline, and require additional steps or specific flags, as described below (NB: they also introduce some redundancy in the data. If you will only be using `scholar` and are short on space, feel free to delete intermediate files)
+```console
+soup-nuts preprocess --help
+```
+
+Scripts to process the data as in the paper:
+ - [wikipedia](data/wikitext/process-data.sh)
+ - [nytimes](data/nytimes/process-data.sh)
+
+To process a new dataset similarly to the paper, use the following setup
+
+```console
+soup-nuts preprocess \
+    <your_input_file> \
+    processed/${OUTPUT_DIR} \
+    --input-format text \
+    --lines-are-documents \
+    --output-text \
+    --lowercase \
+    --min-doc-size 5 \
+    --max-vocab-size 30000 \
+    --limit_vocab_by_df \
+    --max-doc-freq 0.9 \
+    --detect-entities \
+    --token-regex wordlike \
+    --no-double-count-phrases \
+    --min-chars 2
+```
+
+## Metric and Data Reproducibility
+
+We use gensim to standardize metric calculations. You can download processed reference wikipedia corpora used in the paper at the following links:
+
+ - Vocabulary file (for reference)
+    - [vocab.json](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/vocab.json)
+ - Processed data files. `train` is the 28-thousand article [WikiText-103](https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/), `full` is a 4.6-million article Wikipedia dump from the same period.
+    - jsonlines files of fully pre-processed, sequential text to calculate coherence scores
+        - Format is `{"tokenized_text": "This is a document.", "id": 0 }`
+        - [train.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.metadata.jsonl)
+        - [full.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.metadata.jsonl)
+    - document-term matrices (read with `scipy.sparse.load_npz`)
+        - [train.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.dtm.jsonl)
+        - [full.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.dtm.npz)
+
+To obtain metrics on topics, you need to provide:
+ - `--topics_fpath`
+    - A text file, where each line contains the words for a given topic, ordered by descending word probability (not necessary to have the full vocabulary)
+ - `--reference_fpath`
+    - The file used to calculate co-occurence counts. It is either a jsonl or text file, where each line has space-delimited, processed text _in the same order as the original data_ . This is what is produced by the `--output-text` flag in `soup-nuts preprocess`. (If jsonl is provided, assumes the key is `"tokenized_text"`)
+ - `--vocabulary_fpath`
+    - The _training set_ vocabulary, that is, the vocabulary that would have been used by the model to generate the topics file being evaluated. Can either be json list/dict (if keys are terms), or a plain text file.
+ - `--coherence_measure`, one of `'u_mass', 'c_v', 'c_uci', 'c_npmi'`, see [gensim](https://radimrehurek.com/gensim/models/coherencemodel.html) for details
+ - `--top_n`, the number of words from each topic used to calculate coherence
+ - `--window_size`, the size of the sliding window over the corpus to obtain co-occurrence counts. Leave blank to use the default.
+ - `--output_fpath`
+    - Where you would like to save the file (e.g., model_directory/coherences.json)
+
+As an example:
+
+```console
+soup-nuts coherence \
+    <path-to-topics.txt> \
+    --output-fpath ./coherences.json \
+    --reference-fpath data/wikitext/processed/train.metadata.jsonl \
+    --coherence-measure c_npmi \
+    --vocabulary-fpath <path-to-train-vocab.json> \
+    --top-n 15
+```
+
+Use `--update` to add to an existing file.
+
+## Models
+
+All models currently require independent conda environments. To get model code, you need to clone with the `--recurse-submodules` flag.
+
+Although some effort has been made to unify the arguments of the models, for now they should be treated separately.
+
+Running knowledge distillation also requires a separate environment, as it involves the use of the [`transformers`](https://github.com/huggingface/transformers) library.
+
+
+## Model-specific notes
+
+Some models and settings are not yet fully integrated in the pipeline, and require additional steps or specific flags, as described below (NB: they also introduce some redundancy in the data.)
 
 - **`scholar`** model
     - For `soup-nuts preprocess`, use these flags: `--retain-text`
@@ -48,12 +146,6 @@ Instructions for usage can be accessed with `soup-nuts preprocess --help`. Some 
 - **Knowledge distillation** (currently only supported in `scholar`)
     - For `soup-nuts preprocess`, retain the text as "metadata" with these flags `--input-format jsonl --jsonl-text-key <your_text_key> --output-format jsonl --jsonl-metadata-keys <your_text_key>` (in addition to steps for `scholar`)
 
-
-# Models
-
-All models currently require independent conda environments. Although some effort has been made to unify the arguments of the models, for now they should be treated separately.
-
-Running **knowledge distillation** also requires a separate environment, as it involves the use of the [`transformers`](https://github.com/huggingface/transformers) library.
 
 # End-to-end example
 Below, we outline how to run a single mallet model on some example data.
@@ -116,5 +208,3 @@ View the top words in each topic with
 ```console
 $ cut -f 1-10 -d " " results/mallet-speeches/topics.txt
 ```
-
-

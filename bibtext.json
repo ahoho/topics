@@ -1,0 +1,15 @@
+--2022-05-18 02:08:53--  https://proceedings.neurips.cc/paper/11778-/bibtex
+Resolving proceedings.neurips.cc (proceedings.neurips.cc)... 198.202.70.94
+Connecting to proceedings.neurips.cc (proceedings.neurips.cc)|198.202.70.94|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://proceedings.neurips.cc/paper/2021/file/0f83556a305d789b1d71815e8ea4f4b0-Bibtex.bib [following]
+--2022-05-18 02:08:53--  https://proceedings.neurips.cc/paper/2021/file/0f83556a305d789b1d71815e8ea4f4b0-Bibtex.bib
+Reusing existing connection to proceedings.neurips.cc:443.
+HTTP request sent, awaiting response... 200 OK
+Length: 613 [application/x-bibtex]
+Saving to: ‘bibtex’
+
+     0K                                                       100%  168M=0s
+
+2022-05-18 02:08:53 (168 MB/s) - ‘bibtex’ saved [613/613]
+
