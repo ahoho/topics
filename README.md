@@ -1,7 +1,7 @@
 # Is Automated Topic Model Evaluation Broken?
 
 Code and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173). Do not hesitate to create an issue or email us if you have problems!
-
+s
 Please cite us if you find this package useful
 
 ```
@@ -34,7 +34,7 @@ $ poetry install
 Check the installation with 
 
 ```console
-soup-nuts --help
+$ soup-nuts --help
 ```
 
 If you do not use poetry, or you have issues with installation, you can run with `python -m soup_nuts.main <command name>`
@@ -43,7 +43,7 @@ If you do not use poetry, or you have issues with installation, you can run with
 Models need their own environments. Requirements are in the `.yml` files in each of the `soup_nuts/models/<model_name>` directories, and can be installed with
 
 ```console
-conda env create -f <environment_name>.yml
+$ conda env create -f <environment_name>.yml
 ```
 
 (names for each are set in the first line of each `yml` file, and can be changed as needed)
@@ -56,8 +56,35 @@ Preprocessing relies on [spaCy](https://spacy.io/) to efficiently tokenize text,
 Thorough instructions for usage can be accessed with 
 
 ```console
-soup-nuts preprocess --help
+$ soup-nuts preprocess --help
 ```
+
+Below we list a partial list of arguments (again, see `--help` for more):
+ - Preprocessing:
+    - `--lowercase`, `--ngram-range`, `--min-doc-freq`, `--max-doc-freq`, `--max-vocab-size`
+        - Standard preprocessing arguments with semantics borrowed from [`CountVectorizer`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html) in sklearn
+    - `--limit-vocab-by-df`
+        - If setting `max-vocab-size`, sort the terms by their document-frequency rather than the overall term frequency
+    - `--detect-entities`, `--detect-noun-chunks`
+        - Detect entities (`'New York'->'New_York'`) and noun chunks (`'8.1 million American adults'-> '8.1_million_American_adults'`) with spaCy. The latter is a bit time-intensive and can lead to vocabulary size exposions.
+    - `--double-count-phrases`
+        - Collocations are included alongside constituent unigrams, `'New York' -> 'New York New_York'`. Per [Philip Resnik](http://users.umiacs.umd.edu/~resnik/), this helps with topic readability, although we have not tested it empirically.
+    - `--lemmatize`
+        - Topic modeling experts are fairly unified against stemming (ant to a lesser extent lemmatization), and there is [empirical work](https://mimno.infosci.cornell.edu/papers/schofield_tacl_2016.pdf) to back it up, but we include it as an option anyway. Lemmatization is also fallible, spaCy turns `taxes` to `taxis`
+    - `--vocabulary`
+        - An external vocabulary list will override other preprocessing and restrict it to the provided terms.
+    - `--phrases`
+        - An external underscore-connected phrase list _supplements_ phrases found with spaCy (e.g., `nintendo_gameboy_advance`). Use `soup-nuts detect-phrases` to uncover statistical collocations.
+ - Data formatting
+    - `--jsonl-text-key, --jsonl-id-key`
+        - The keys corresponding to the text and id in a jsonlines file. ids created automatically based on the line number in the file if not provided.
+    - `--jsonl-metadata-keys`
+        - Keys in jsonlines input data that you would like to pass through to the processed result (in a `<split>.metadata.jsonl` file). Separate with commas, e.g., `key1,key2,key3`. Can be helpful (if storage-intensive) to include the original raw text.
+    - `--output-text`
+        - Output the processed text in the same order as the input (e.g., `"The lamb lies down on Broadway" -> "lamb lies down broadway"`). Needed for accurate internal coherence calculations (evaluating on a train/val/test set).
+
+## Reproducibility
+### Data
 
 Scripts to process the data as in the paper:
  - [wikipedia](data/wikitext/process-data.sh)
@@ -83,11 +110,13 @@ soup-nuts preprocess \
     --min-chars 2
 ```
 
-## Metric and Data Reproducibility
+To use the exact vocabulary from our wikipedia settings, pass `--vocabulary` and include [this file.](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/vocab.json)
+
+### Metrics
 
 We use gensim to standardize metric calculations. You can download processed reference wikipedia corpora used in the paper at the following links:
 
- - Vocabulary file (for reference)
+ - Vocabulary file (this is not nece)
     - [vocab.json](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/vocab.json)
  - Processed data files. `train` is the 28-thousand article [WikiText-103](https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/), `full` is a 4.6-million article Wikipedia dump from the same period.
     - jsonlines files of fully pre-processed, sequential text to calculate coherence scores
@@ -98,17 +127,18 @@ We use gensim to standardize metric calculations. You can download processed ref
         - [train.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.dtm.jsonl)
         - [full.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.dtm.npz)
 
-To obtain metrics on topics, you need to provide:
- - `--topics_fpath`
+To obtain metrics on topics, run `soup-nuts coherence` with the following arguments:
+ - `--topics-fpath`
     - A text file, where each line contains the words for a given topic, ordered by descending word probability (not necessary to have the full vocabulary)
- - `--reference_fpath`
-    - The file used to calculate co-occurence counts. It is either a jsonl or text file, where each line has space-delimited, processed text _in the same order as the original data_ . This is what is produced by the `--output-text` flag in `soup-nuts preprocess`. (If jsonl is provided, assumes the key is `"tokenized_text"`)
- - `--vocabulary_fpath`
+ - `--reference-fpath`
+    - The file used to calculate co-occurence counts. It is either a jsonl or text file, where each line has space-delimited, processed text _in the same order (sequence) as the original data_, e.g., `"The lamb lies down on Broadway" -> "lamb lies down broadway"`.
+    - This is what is produced with the `--output-text` flag in `soup-nuts preprocess` (If a jsonl file is provided, it assumes the key is `"tokenized-text"`)
+ - `--vocabulary-fpath`
     - The _training set_ vocabulary, that is, the vocabulary that would have been used by the model to generate the topics file being evaluated. Can either be json list/dict (if keys are terms), or a plain text file.
- - `--coherence_measure`, one of `'u_mass', 'c_v', 'c_uci', 'c_npmi'`, see [gensim](https://radimrehurek.com/gensim/models/coherencemodel.html) for details
- - `--top_n`, the number of words from each topic used to calculate coherence
- - `--window_size`, the size of the sliding window over the corpus to obtain co-occurrence counts. Leave blank to use the default.
- - `--output_fpath`
+ - `--coherence-measure`, one of `'u_mass', 'c_v', 'c_uci', 'c_npmi'`, see [gensim](https://radimrehurek.com/gensim/models/coherencemodel.html) for details
+ - `--top-n`, the number of words from each topic used to calculate coherence
+ - `--window-size`, the size of the sliding window over the corpus to obtain co-occurrence counts. Leave blank to use the gensim default.
+ - `--output-fpath`
     - Where you would like to save the file (e.g., model_directory/coherences.json)
 
 As an example:
@@ -134,7 +164,7 @@ Although some effort has been made to unify the arguments of the models, for now
 Running knowledge distillation also requires a separate environment, as it involves the use of the [`transformers`](https://github.com/huggingface/transformers) library.
 
 
-## Model-specific notes
+### Model-specific notes
 
 Some models and settings are not yet fully integrated in the pipeline, and require additional steps or specific flags, as described below (NB: they also introduce some redundancy in the data.)
 
@@ -156,7 +186,7 @@ After installing `poetry` and miniconda (see above), clone the repo, create the 
 $ git clone -b dev https://github.com/ahoho/topics.git --recurse-submodules
 $ conda create -n soup-nuts python=3.9
 $ conda activate soup-nuts
-$ poetry install --extras gensim
+$ poetry install
 ```
 
 With it installed, you can now process data. To process our example data with some sensible settings:
