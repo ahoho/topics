@@ -9,7 +9,6 @@ from typing import Optional, Iterable
 
 import typer
 from scipy import sparse
-from runs.calculate_coherence import load_json
 from spacy.lang.en.stop_words import STOP_WORDS
 from gensim.models.phrases import ENGLISH_CONNECTOR_WORDS
 
