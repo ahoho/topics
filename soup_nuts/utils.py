@@ -49,6 +49,19 @@ def read_json(path: Union[Path, str], encoding: str = "utf-8") -> Union[list,dic
         return json.load(infile)
 
 
+def read_tokens(path: Union[Path, str], jsonl_text_key: str = None, encoding: str = "utf-8") -> Iterable[str]:
+    """
+    Stream tokens from a file.
+    """
+    with open(path, encoding=encoding) as infile:
+        for text in infile:
+            if jsonl_text_key is not None:
+                text = json.loads(text)[jsonl_text_key]
+            text = text.strip()
+            if text:
+                yield text.split(" ")
+
+
 def save_lines(obj: Iterable, fpath: Union[str, Path]):
     with open(fpath, "w") as outfile:
         for i, x in enumerate(obj):
@@ -61,6 +74,11 @@ def save_lines(obj: Iterable, fpath: Union[str, Path]):
 def save_json(obj: Any, fpath: Union[str, Path], indent: Optional[int] = None):
     with open(fpath, "w") as outfile:
         json.dump(obj, outfile, indent=indent)
+
+
+def save_text(obj, path):
+    with open(path, "w") as outfile:
+        outfile.write(obj)
 
 
 def save_params(params: dict[str, Any], fpath: Union[str, Path]):

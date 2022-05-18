@@ -1,21 +1,27 @@
 from collections.abc import Iterable
 import logging
 import re
+import sys
+import json
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Iterable
 
 import typer
 from scipy import sparse
+from runs.calculate_coherence import load_json
 from spacy.lang.en.stop_words import STOP_WORDS
+from gensim.models.phrases import ENGLISH_CONNECTOR_WORDS
 
 from .preprocess import read_docs, read_jsonl, docs_to_matrix
 from .phrases import detect_phrases as detect_phrases_
+from .metrics import calculate_coherence
 from .utils import (
     expand_paths,
     get_total_lines,
     read_lines,
     read_json,
+    read_tokens,
     save_lines,
     save_json,
     save_jsonl,
@@ -50,7 +56,6 @@ def stopwords_callback(value: str) -> Iterable[str]:
     if value == "none":
         return None
     return read_lines(value)
-
 
 @app.command(help="Preprocess documents to a document-term matrix.")
 def preprocess(
@@ -151,7 +156,11 @@ def preprocess(
     max_vocab_size: Optional[int] = typer.Option(
         None,
         min=0,
-        help="Maximum size of the vocabulary."
+        help="Maximum size of the vocabulary, sorted by term-frequency by default."
+    ),
+    limit_vocab_by_df: bool = typer.Option(
+        True,
+        help="If using `max_vocab_size`, sort by doc-frequency rather than term-frequency."
     ),
     detect_entities: bool = typer.Option(
         False,
@@ -305,6 +314,7 @@ def preprocess(
         min_doc_freq=min_doc_freq,
         max_doc_freq=max_doc_freq,
         max_vocab_size=max_vocab_size,
+        limit_vocab_by_df=limit_vocab_by_df,
         detect_entities=detect_entities,
         detect_noun_chunks=detect_noun_chunks,
         double_count_phrases=double_count_phrases,
@@ -380,9 +390,121 @@ def preprocess(
         save_jsonl(test_metadata, Path(output_dir, "test.metadata.jsonl"))
 
 
-def connector_words_callback(value: str) -> Iterable[str]:
-    from gensim.models.phrases import ENGLISH_CONNECTOR_WORDS
+class Coherence(str, Enum):
+    c_v: str = "c_v"
+    u_mass: str = "u_mass"
+    c_uci: str = "c_uci"
+    c_npmi: str = "c_npmi"
 
+
+@app.command(help="Calculate coherence for a model (requires gensim)")
+def coherence(
+    topics_fpath: Path = typer.Argument(
+        None,
+        exists=True,
+        help="File containing topic data (one line per topic, with n most probable words per line)",
+    ),
+    output_fpath: Optional[Path] = typer.Option(
+        None,
+        help=(
+            "Where to output the coherences json file. "
+            "Will default to `coherences.json` in the same folder as topic_fpath"
+        ),
+    ), 
+    reference_fpath: Path = typer.Option(
+        None,
+        exists=True,
+        help="File containing ordered, processed text.",
+    ),
+    reference_name: Optional[str] = typer.Option(
+        None,
+        help="Friendly name for the reference. If not included, uses `reference_path`",
+    ),
+    vocabulary_fpath: Path = typer.Option(
+        None,
+        exists=True,
+        help="File (in json) containing training-set vocabulary."
+    ),
+    coherence_measure: Coherence = typer.Option(
+        Coherence,
+        help="Coherence measure to use",
+    ),
+    window_size: int = typer.Option(
+        None,
+        help="Context window size for calculations. None uses default from gensim.",
+    ),
+    top_n: int = typer.Option(
+        10,
+        help="Number of topic words to calculate coherence over.",
+    ),
+    update: bool = typer.Option(
+        False,
+        help=(
+            "Update coherence file if it exists, overwriting results for any "
+            "metrics with the same topic file, reference file, and metric settings. "
+        )
+    ),
+    encoding="utf-8",
+):
+    if output_fpath is None:
+        output_fpath = Path(topics_fpath).parent / "coherences.json"
+    if output_fpath.exists() and not update:
+        raise FileExistsError(f"{output_fpath} already exists. Use `update` to add new metrics")
+    
+    # read topics
+    topics = list(read_tokens(topics_fpath, encoding=encoding))
+
+    # read vocab
+    if Path(vocabulary_fpath).suffix.endswith("json"):
+        vocabulary = read_json(vocabulary_fpath, encoding)
+    else:
+        vocabulary = read_lines(vocabulary_fpath, encoding)
+
+    # stream reference
+    if Path(reference_fpath).suffix.endswith("jsonl"):
+        reference_text = read_tokens(reference_fpath, "tokenized_text", encoding=encoding)
+    else:
+        reference_text = read_tokens(reference_fpath, encoding=encoding)
+
+    logger.info("Calculating coherence")
+    metric_name, metric_agg, metric_by_topic = calculate_coherence(
+        topics=topics,
+        vocab=vocabulary,
+        reference_text=reference_text,
+        coherence_measure=coherence_measure,
+        window_size=window_size,
+        top_n=top_n,
+    )
+
+    reference_name = reference_name if reference_name else reference_fpath
+
+    coherence_result = {
+        "metric": metric_name,
+        "aggregate": metric_agg,
+        "by_topic": metric_by_topic,
+        "reference_name": str(reference_name),
+        "topics": str(topics_fpath), # path not json serializable
+    }
+
+    if output_fpath.exists():
+        prev_coherence = read_json(output_fpath)
+        prev_coherence = [
+            c for c in prev_coherence if not
+            (
+                c["metric"] == metric_name and
+                c["reference_name"] == str(reference_name) and
+                c["topics"] == str(topics_fpath)
+            )
+        ]
+        prev_coherence.append(coherence_result)
+        save_json(prev_coherence, output_fpath, indent=2)
+    else:
+        save_json([coherence_result], output_fpath, indent=2)
+
+    logger.info(f"Coherence metric:\n{json.dumps(coherence_result, indent=2)}")
+
+
+def connector_words_callback(value: str) -> Iterable[str]:
     if value == "english":
         return ENGLISH_CONNECTOR_WORDS | STOP_WORDS
     if value == "gensim_default":
@@ -528,4 +650,8 @@ def detect_phrases(
 
 
 if __name__ == "__main__":
+    logger.setLevel(logging.INFO)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    logger.addHandler(ch)
     app()

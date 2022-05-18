@@ -3,13 +3,14 @@ from re import Pattern
 import logging
 from typing import Callable, Optional, Union
 
+from tqdm import tqdm
+from gensim.models import Phrases
+
 from spacy.language import Language
 from spacy.tokens import Doc, Span
 from spacy.matcher import PhraseMatcher
 from spacy.util import filter_spans
 from spacy.lang.en.stop_words import STOP_WORDS
-
-from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -171,10 +172,7 @@ def detect_phrases(
 
     Designed to be run before preprocessing, to create a list of corpus-specific phrases
     """
-    # This function is self-contained, so we defer imports (gensim is not used
-    # during preprocessing, so preferable to keep it optional)
     from .preprocess import tokenize_docs, create_pipeline
-    from gensim.models import Phrases
 
     connector_words = frozenset(connector_words) if connector_words else frozenset()
 

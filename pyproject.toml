@@ -16,13 +16,10 @@ spacy = "^3.0"
 scikit-learn = "^0.24"
 tqdm = "*"
 typer = {extras = ["all"], version = "^0.3.2"}
-gensim = {version = "^4.0", optional = true}
+gensim = "^4.0"
 
 [tool.poetry.dependencies.en_core_web_sm]
 url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz"
-
-[tool.poetry.extras]
-gensim = ["gensim"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
