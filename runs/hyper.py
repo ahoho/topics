@@ -1,14 +1,16 @@
 import argparse
 import copy
-import operator
-import random
-import shutil
-import warnings
 from collections import defaultdict
 from datetime import datetime
+import itertools
+import operator
 from pathlib import Path
+import random
+import shutil
+from tokenize import group
+from typing import Iterable
+import warnings
 
-# from git import Repo
 from sklearn.model_selection import ParameterGrid
 
 import yaml
@@ -108,6 +110,8 @@ def apply_constraints(params, constraints):
     """
     Ensure that `params` meet `constraints`
     `constraints` is a list of (parameter, constraint function, constraint parameter) tuples
+
+    TODO: remove? a bit complex
     """
     if constraints is None:
         return True
@@ -134,7 +138,7 @@ def apply_constraints(params, constraints):
     return True
 
 
-def hyper_to_configs(hyper_conf, random_runs=None, seed=42):
+def hyper_to_configs(hyper_conf, random_runs=None, params_to_group=None, seed=42):
     """
     Create the set of configurations from the grid
     """
@@ -148,8 +152,22 @@ def hyper_to_configs(hyper_conf, random_runs=None, seed=42):
         grid = ParameterGrid(hyper_settings)
         if random_runs:
             random.seed(seed)
-            random_runs = None if random_runs == -1 else random_runs
-            grid = sorted(grid, key=lambda k: random.random())[:random_runs]
+            grid = list(grid)
+            total = len(grid)
+            random_runs = total if random_runs == -1 else min(random_runs, total)
+            if params_to_group is None or random_runs == total:
+                grid = random.sample(grid, k=random_runs)
+            else:
+                # `param_groups` specifies the hyperparameter setting(s) for which we want
+                # there to be `random_runs` (i.e., equal) samples
+                keyfunc = lambda s: tuple(s[k] for k in params_to_group)
+                grid = sorted(grid, key=keyfunc)
+                random_runs = min(random_runs, total // len(params_to_group))
+                grid = [
+                    setting for 
+                    _, grid_group in itertools.groupby(grid, key=keyfunc)
+                    for setting in random.sample(list(grid_group), k=random_runs)
+                ]
         
         for params in grid:
             if constraints is None or apply_constraints(params, constraints):
@@ -184,6 +202,7 @@ def hyper(
     base_config_yml_path: str = None,
     random_runs: int = -1,
     skip_if_file_exists: str = None,
+    params_to_group: Iterable = None,
     dry_run: bool = False,
     seed: int = None,
     ):
@@ -196,7 +215,7 @@ def hyper(
     hyper_conf = load_yaml(hyper_settings_yml_path)
     
     # hyper_conf_path is a yml file defining the hyper parameter sweep
-    configs = hyper_to_configs(hyper_conf, random_runs, seed=seed)
+    configs = hyper_to_configs(hyper_conf, random_runs, params_to_group=params_to_group, seed=seed)
 
     # base_config_yml_path is the template for the configuration
     base_config = load_yaml(base_config_yml_path) if base_config_yml_path else {}
@@ -218,6 +237,7 @@ def hyper(
 
         n_runs += 1
         if dry_run:
+            print(conf_name)
             continue
 
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -227,7 +247,7 @@ def hyper(
         run_command = run_template.format(config_path=conf_path, output_dir=output_dir)
         commands.append(run_command)
 
-    print(f"Found {n_runs} configurations.")
+    print(f"\n\tFound {n_runs} configurations.")
     if dry_run:
         return
 
@@ -280,16 +300,29 @@ if __name__ == "__main__":
         default=None,
         help="If this file exists in an output model directory, do not create a run"
     )
+    parser.add_argument(
+        "--params_to_group",
+        type=str,
+        help=(
+            "Group the complete grid of hyperparameter configurations by a subset of "
+            " of these hyperparameter settings, sampling `random_runs` configurations "
+            " (i.e., an equal number) for each group. "
+            "Specify a comma-delimited list of hyperparameters without spaces. "
+        ),
+        default=None,
+    )
     parser.add_argument("--dry_run", action="store_true", default=False)
     parser.add_argument("--seed", type=int, default=11235)
     
     args = parser.parse_args()
+    params_to_group = args.params_to_group.split(",") if args.params_to_group is not None else None
     hyper(
         hyper_settings_yml_path=args.hyper_settings_yml_path,
         base_output_path=args.base_output_path,
         base_config_yml_path=args.base_config_yml_path,
         random_runs=args.random_runs,
         skip_if_file_exists=args.skip_if_file_exists,
+        params_to_group=params_to_group,
         dry_run=args.dry_run,
         seed=args.seed,
     )

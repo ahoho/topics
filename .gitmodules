@@ -1,12 +1,15 @@
 [submodule "soup_nuts/models/etm"]
 	path = soup_nuts/models/etm
-	url = https://github.com/ahoho/ETM
+	url = git@github.com:ahoho/ETM.git
 [submodule "soup_nuts/models/dvae"]
 	path = soup_nuts/models/dvae
-	url = https://github.com/ahoho/dvae
+	url = git@github.com:ahoho/dvae.git
 [submodule "soup_nuts/models/gensim"]
 	path = soup_nuts/models/gensim
-	url = https://github.com/ahoho/gensim-runner
+	url = git@github.com:ahoho/gensim-runner.git
 [submodule "soup_nuts/models/contextualized-topic-models"]
 	path = soup_nuts/models/contextualized-topic-models
 	url = git@github.com:styx97/contextualized-topic-models.git
+[submodule "soup_nuts/models/scholar"]
+	path = soup_nuts/models/scholar
+	url = git@github.com:ahoho/scholar.git
