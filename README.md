@@ -1,7 +1,9 @@
 # Is Automated Topic Model Evaluation Broken?
 
-Code and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173). Do not hesitate to create an issue or email us if you have problems!
-s
+Package and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173). Do not hesitate to create an issue or email us if you have problems!
+
+Preprocessing & coherence calculations are provied as part of an easy-to-use, well-documented package called `soup-nuts` (see installation and usage instructions below). We hope that this tool encourages standardized & reproducible topic model evaluation.
+
 Please cite us if you find this package useful
 
 ```
