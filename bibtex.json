@@ -1,0 +1,12 @@
+@inproceedings{NEURIPS2021_0f83556a,
+ author = {Hoyle, Alexander and Goel, Pranav and Hian-Cheong, Andrew and Peskov, Denis and Boyd-Graber, Jordan and Resnik, Philip},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {M. Ranzato and A. Beygelzimer and Y. Dauphin and P.S. Liang and J. Wortman Vaughan},
+ pages = {2018--2033},
+ publisher = {Curran Associates, Inc.},
+ title = {Is Automated Topic Model Evaluation Broken? The Incoherence of Coherence},
+ url = {https://proceedings.neurips.cc/paper/2021/file/0f83556a305d789b1d71815e8ea4f4b0-Paper.pdf},
+ volume = {34},
+ year = {2021}
+}
+
