@@ -315,7 +315,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=11235)
     
     args = parser.parse_args()
-    params_to_group = args.params_to_group.split(",") if args.params_to_group is not None else None
+    params_to_group = [k.strip() for k in args.params_to_group.split(",")] if args.params_to_group is not None else None
     hyper(
         hyper_settings_yml_path=args.hyper_settings_yml_path,
         base_output_path=args.base_output_path,
