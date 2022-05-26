@@ -14,7 +14,7 @@ from gensim.models.phrases import ENGLISH_CONNECTOR_WORDS
 
 from .preprocess import read_docs, read_jsonl, docs_to_matrix
 from .phrases import detect_phrases as detect_phrases_
-from .metrics import calculate_coherence
+from .metrics import coherence
 from .utils import (
     expand_paths,
     get_total_lines,
@@ -397,7 +397,7 @@ class Coherence(str, Enum):
 
 
 @app.command(help="Calculate coherence for a model (requires gensim)")
-def coherence(
+def calculate_coherence(
     topics_fpath: Path = typer.Argument(
         None,
         exists=True,
@@ -466,7 +466,7 @@ def coherence(
         reference_text = read_tokens(reference_fpath, encoding=encoding)
 
     logger.info("Calculating coherence")
-    metric_name, metric_agg, metric_by_topic = calculate_coherence(
+    metric_name, metric_agg, metric_by_topic = coherence(
         topics=topics,
         vocab=vocabulary,
         reference_text=reference_text,
