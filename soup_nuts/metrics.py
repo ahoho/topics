@@ -23,7 +23,7 @@ def _gen_measure_name(coherence_measure, window_size, top_n):
 
 
 def _summarize(data):
-    return pd.Series(data).describe()
+    return pd.Series(data).describe().to_dict()
 
 
 def coherence(
