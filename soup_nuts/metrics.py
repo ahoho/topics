@@ -1,5 +1,5 @@
-from faulthandler import disable
 import random
+from multiprocessing import Pool
 from collections import defaultdict
 from itertools import combinations
 
@@ -158,6 +158,7 @@ def topic_dists_over_runs(
     sample_n=1.0,
     summarize=False,
     seed=None,
+    workers=1,
     tqdm_kwargs={},
 ):
     """
@@ -209,16 +210,19 @@ def topic_dists_over_runs(
     combins = combins[:sample_n]
 
     # compute distances    
-    # first, initialize the matrix in which to store the distances
-    num_topics = estimates[0].shape[0]
-    min_dists = np.zeros((len(combins), num_topics))
-
     # for each run pair, find the minimum global distances
-    for i, (idx_a, idx_b) in enumerate(tqdm(combins, **tqdm_kwargs)):
-        # get distances: produces a [k x k] "cost" matrix
-        dists = cdist(estimates[idx_a], estimates[idx_b], metric=metric)
-        row_idx, col_idx = linear_sum_assignment(dists) # min the global match cost
-        min_dists[i] = dists[row_idx, col_idx]
+    if workers <= 1:
+        # first, initialize the matrix in which to store the distances
+        num_topics = estimates[0].shape[0]
+        min_dists = np.zeros((len(combins), num_topics))
+        for i, (idx_a, idx_b) in enumerate(tqdm(combins, **tqdm_kwargs)):
+            args = (estimates[idx_a], estimates[idx_b], metric)
+            min_dists[i] = _min_total_topic_dist(args)
+    else:
+        with Pool(processes=workers) as pool:
+            args = [(estimates[idx_a], estimates[idx_b], metric) for idx_a, idx_b in combins]
+            result = pool.imap_unordered(_min_total_topic_dist, args)
+            min_dists = np.array([r for r in result])
 
     min_dists = np.sort(min_dists, axis=1)
 
@@ -229,6 +233,14 @@ def topic_dists_over_runs(
         return _summarize(min_dists.sum(1))
 
     return min_dists
+
+
+def _min_total_topic_dist(args):
+    """Helper function to find the minimum total cost TODO: quicker approximation?"""
+    x, y, metric = args
+    dists = cdist(x, y, metric=metric) # get distances: produces a [k x k] "cost" matrix
+    row_idx, col_idx = linear_sum_assignment(dists) # minimize the global match cost
+    return dists[row_idx, col_idx]
 
 
 def doc_words_dists_over_runs(doc_topic_runs, topic_word_runs, sample_n=1, seed=None, tqdm_kwargs={}):
