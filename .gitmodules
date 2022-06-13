@@ -13,3 +13,9 @@
 [submodule "soup_nuts/models/scholar"]
 	path = soup_nuts/models/scholar
 	url = git@github.com:ahoho/scholar.git
+[submodule "soup_nuts/models/otm"]
+	path = soup_nuts/models/otm
+	url = git@github.com:styx97/NeuralSinkhornTopicModel.git
+[submodule "soup_nuts/models/ot"]
+	path = soup_nuts/models/ot
+	url = git@github.com:styx97/NeuralSinkhornTopicModel.git
