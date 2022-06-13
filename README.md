@@ -126,7 +126,7 @@ We use gensim to standardize metric calculations. You can download processed ref
         - [train.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.metadata.jsonl)
         - [full.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.metadata.jsonl)
     - document-term matrices (read with `scipy.sparse.load_npz`)
-        - [train.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.dtm.jsonl)
+        - [train.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.dtm.npz)
         - [full.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.dtm.npz)
 
 To obtain metrics on topics, run `soup-nuts coherence` with the following arguments:
