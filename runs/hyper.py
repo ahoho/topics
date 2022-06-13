@@ -149,6 +149,8 @@ def hyper_to_configs(hyper_conf, random_runs=None, params_to_group=None, seed=42
 
     if hyper_settings is not None:
         # Convert list of hyperparams to sweep
+        if isinstance(hyper_settings, list):
+            hyper_settings = [{**h, "__index": [i]} for i, h in enumerate(hyper_settings)]
         grid = ParameterGrid(hyper_settings)
         if random_runs:
             random.seed(seed)
@@ -170,6 +172,11 @@ def hyper_to_configs(hyper_conf, random_runs=None, params_to_group=None, seed=42
                 ]
         
         for params in grid:
+            # this lets us assign friendly names when hyper_settings is a list
+            setting = hyper_settings
+            if "__index" in params:
+                setting = hyper_settings[params.pop("__index")]
+            
             if constraints is None or apply_constraints(params, constraints):
                 # Deep copy to avoid overwriting
                 conf = copy.deepcopy(hyper_conf)
@@ -178,9 +185,9 @@ def hyper_to_configs(hyper_conf, random_runs=None, params_to_group=None, seed=42
                 if name_template:
                     # remap to friendly names
                     renamed_params = {
-                        k: hyper_settings[k][v]
+                        k: setting[k][v]
                         for k, v in params.items()
-                        if isinstance(hyper_settings[k], dict)
+                        if isinstance(setting[k], dict)
                     }
                     name_params = {**conf['params'], **renamed_params}
                     conf["conf_name"] = name_template.format(**name_params)
