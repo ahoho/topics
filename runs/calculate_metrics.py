@@ -231,6 +231,10 @@ def calculate_metrics(base_run_dir, config_file="config.yml", debug=False, as_da
                 beta, theta_train, theta_test = load_estimates(run['model_dir'], run['model_type'])
                 # make assignments
                 pred_train, pred_test = theta_train.argmax(1), theta_test.argmax(1)
+                # if any identical assignments: pathological run, throw away
+                if pred_train.max() == pred_train.min():
+                    print("Pathological run found, skipping")
+                    continue
 
                 # calculate cluster metrics. `run` is a reference to item in `config_data`
                 for metric_name, fn in CLUSTER_METRICS.items():
