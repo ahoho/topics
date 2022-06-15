@@ -1,6 +1,7 @@
 from collections import defaultdict
 import itertools
 import json
+import multiprocessing
 import re
 import argparse
 from pathlib import Path
@@ -63,15 +64,34 @@ CLUSTER_METRICS = {
     "inv_purity": lambda pred, true: purity(true, pred),
 }
 # signature is `doc_topic_runs, topic_word_runs`
+# TODO: move to a config file
 STABILITY_METRICS = {
     "doc_topic": {
-        "unique_doc_words": lambda dt, tw: unique_doc_words_over_runs(dt, tw, top_n=TOP_N_WORDS, summarize=True),
-        "unique_doc_words_hard": lambda dt, tw: unique_doc_words_over_runs(dt, tw, top_n=TOP_N_WORDS, hard_assignment=True, summarize=True),
-        "doc_topic_dists": lambda dt, tw: topic_dists_over_runs(doc_topic_runs=dt, summarize=True, tqdm_kwargs={"leave": False, "desc": "Calculating doc-topic dists."}),
+        "unique_doc_words": lambda dt, tw: unique_doc_words_over_runs(
+            dt, tw, top_n=TOP_N_WORDS, summarize=True
+        ),
+        "unique_doc_words_hard": lambda dt, tw: unique_doc_words_over_runs(
+            dt, tw, top_n=TOP_N_WORDS, hard_assignment=True, summarize=True
+        ),
+        "doc_topic_dists_corr": lambda dt, tw: topic_dists_over_runs(
+            doc_topic_runs=dt,
+            summarize=True,
+            metric="correlation",
+            workers=multiprocessing.cpu_count() - 1,
+            tqdm_kwargs={"leave": False, "desc": "Calculating doc-topic dists."}
+        ),
     },
     "topic_word": {
-        "unique_topic_words": lambda dt, tw: unique_topic_words_over_runs(tw, top_n=TOP_N_WORDS, summarize=True),
-        "topic_word_dists": lambda dt, tw: topic_dists_over_runs(topic_word_runs=tw, summarize=True, tqdm_kwargs={"leave": False, "desc": "Calculating topic-word dists"}),
+        "unique_topic_words": lambda dt, tw: unique_topic_words_over_runs(
+            tw, top_n=TOP_N_WORDS, summarize=True
+        ),
+        "topic_word_dists_corr": lambda dt, tw: topic_dists_over_runs(
+            topic_word_runs=tw,
+            summarize=True,
+            metric="correlation",
+            workers=multiprocessing.cpu_count() - 1,
+            tqdm_kwargs={"leave": False, "desc": "Calculating topic-word dists"}
+        ),
     },
 }
 
@@ -250,6 +270,7 @@ def calculate_metrics(base_run_dir, config_file="config.yml", debug=False, as_da
 
             # calculate the stability metrics, over a given setting group
             stability_results = {}
+
             for metric_name, fn in STABILITY_METRICS["doc_topic"].items():
                 stability_results[f"{metric_name}_train"] = fn(estimates["theta_train"], estimates["beta"])
                 stability_results[f"{metric_name}_test"] = fn(estimates["theta_test"], estimates["beta"])
@@ -271,7 +292,10 @@ def summarize_runs(run_data, group_keys, remove_inv_purity=True):
 
     # TODO: geom mean?
     """
-    # First, get averages over labels then over train/test
+    # First, get averages over metrics, over train/test, etc.
+
+
+    # Then get best runs
      
     summarized = run_data.groupby(group_keys).agg([np.mean, np.std])
 
@@ -339,6 +363,7 @@ if __name__ == "__main__":
     if not args.overwrite and (cluster_fpath.exists() or stability_fpath.exists()):
         raise FileExistsError(f"Files exist in {args.output_dir} but `--overwrite` not used.")        
 
+    # 80 run groups => ~2hrs on a 32-core machine
     run_df, group_df = calculate_metrics(args.base_run_dir, debug=args.debug, as_dataframe=True)
 
     # save the data
@@ -346,6 +371,4 @@ if __name__ == "__main__":
     group_df.to_csv(stability_fpath, index=False)
 
     # TODO: get best setting per model
-    
-    run_df.groupby(["model_type", "dataset", "vocab_size"])
 
