@@ -189,6 +189,7 @@ $ git clone -b dev https://github.com/ahoho/topics.git --recurse-submodules
 $ conda create -n soup-nuts python=3.9
 $ conda activate soup-nuts
 $ poetry install
+$ pip install pandas
 ```
 
 With it installed, you can now process data. To process our example data with some sensible settings:
@@ -224,7 +225,8 @@ $ conda env update -n mallet --file gensim.yml
 $ conda activate mallet
 ```
 
-Finally, from the top-level directory, we run the model with
+
+Finally, from the top-level directory, we run the model with 
 
 ```console
 python soup_nuts/models/gensim/lda.py \
@@ -235,6 +237,9 @@ python soup_nuts/models/gensim/lda.py \
     --mallet_path soup_nuts/models/gensim/mallet-2.0.8/bin/mallet \
     --optimize_interval 10
 ```
+
+*Installation Notes: Make sure the above mallet_path points to where you installed mallet!  Otherwise you will get "returned non-zero exit status 127". 
+The current .yml file needs update.  Installing gensim before 4.0 will be needed in your mallet enviornment (i.e., pip install gensim==3.8.3).  Pandas, numpy, scipy may be needed as well.*
 
 View the top words in each topic with
 ```console
