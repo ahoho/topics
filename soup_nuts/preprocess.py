@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from re import Pattern
 from collections.abc import Iterable, Iterator
 from pathlib import Path
@@ -36,11 +37,11 @@ def read_docs(
             if lines_are_documents:
                 for i, text in enumerate(infile):
                     if text:
-                        yield _truncate_doc(text, max_doc_size), {"id": f"{path}:{i:09}"}
+                        yield _truncate_and_clean_doc(text, max_doc_size), {"id": f"{path}:{i:09}"}
             else:
                 text = infile.read().strip()
                 if text:
-                    yield _truncate_doc(text, max_doc_size), {"id": f"{path}"}
+                    yield _truncate_and_clean_doc(text, max_doc_size), {"id": f"{path}"}
 
 
 def read_jsonl(
@@ -56,28 +57,27 @@ def read_jsonl(
     """
     if isinstance(paths, (Path, str)):
         paths = [paths]
-    
     for path in paths:
         with open(path, "r", encoding=encoding) as infile:
             for i, line in enumerate(infile):
                 if line:
                     data = json.loads(line)
-                    text = data[text_key].replace("\n", " ") # remove linebreaks
 
                     id = str(data[id_key]) if id_key else f"{path}:{i:09}"
                     metadata = {"id": id}
                     if other_keys is not None:
                         metadata.update({k: data[k] for k in other_keys})
-                    yield _truncate_doc(text, max_doc_size), metadata
+                    yield _truncate_and_clean_doc(data[text_key], max_doc_size), metadata
 
 
-def _truncate_doc(
+def _truncate_and_clean_doc(
     doc: str,
     max_len: Optional[int] = None,
 ) -> str:
     """
     Truncate a document to max_len by the rough number of tokens
     """
+    doc = re.sub("\s+", " ", doc) # remove linebreaks and extra spaces
     if not max_len:
         return doc
     if len(doc.split()) > max_len:
@@ -219,7 +219,7 @@ def tokenize_docs(
             case_sensitive=not lowercase,
             lemmatize=lemmatize,
             phrases=phrases,
-            phrase_stopwords=stopwords if stopwords is not None else STOP_WORDS,
+            phrase_stopwords=stopwords,
             max_phrase_len=max_phrase_len,
         )
     else:
