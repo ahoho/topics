@@ -96,7 +96,7 @@ class PhraseMerger:
         """
         Stopwords and entity labels are preferred as sets since lookup is O(1).
         """
-        self.stopwords = set(stopwords) if stopwords else None
+        self.stopwords = set(stopwords) if stopwords else set()
         self.filter_entities = set(filter_entities) if filter_entities else None
         self.max_phrase_len = max_phrase_len or float("inf")
 
@@ -132,11 +132,12 @@ class PhraseMerger:
                     "dep": phrase.root.dep,
                     "ent_type": phrase.label,
                 }
-                # need to trim leading/trailing stopwords
-                if phrase.label_ != "CUSTOM" and self.stopwords is not None:
-                    while phrase and (phrase[0].lower_ in self.stopwords or phrase[0].is_punct):
+                # need to trim leading stopwords
+                if phrase.label_ != "CUSTOM":
+                    while len(phrase) > 1 and (phrase[0].lower_ in self.stopwords or phrase[0].is_punct):
                         phrase = phrase[1:]
-                    while phrase and (phrase[-1].lower_ in self.stopwords or phrase[-1].is_punct):
+                    # NPs and entities are typically head-final
+                    while len(phrase) > 1 and phrase[-1].is_punct:
                         phrase = phrase[:-1]
                 
                 if phrase.label_ == "CUSTOM" or (1 < phrase.text.count(" ") + 1 < self.max_phrase_len):
