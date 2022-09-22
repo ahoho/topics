@@ -110,7 +110,7 @@ class PhraseMerger:
             # Ones found via `PipedPhraseMatcher` have label "CUSTOM"
             ents = [
                 ent for ent in doc.ents
-                if self.filter_entities is None or ent.label_ in self.filter_entities
+                if len(ent) > 1 and self.filter_entities is None or ent.label_ in self.filter_entities
             ]
             custom = set(tok.i for ent in ents for tok in ent if ent.label_ == "CUSTOM")
 
@@ -119,17 +119,13 @@ class PhraseMerger:
                 # ensure precedence of CUSTOM phrases
                 noun_chunks = [
                     noun for noun in doc.noun_chunks
-                    if not any(tok.i in custom for tok in noun)
+                    if len(noun) > 1 and not any(tok.i in custom for tok in noun)
                 ]
             
             # eliminate overlapping spans, keeping the longest
             # NB that, given earlier filtering, CUSTOM phrases should never be subsumed/
             # broken up
-            phrases = filter_spans([
-                p for p in ents + noun_chunks
-                if p.label_ == "CUSTOM" or len(p) <= self.max_phrase_len
-            ])
-
+            phrases = filter_spans(ents + noun_chunks)
             for phrase in phrases:
                 attrs = {
                     "tag": phrase.root.tag,
@@ -138,15 +134,13 @@ class PhraseMerger:
                 }
                 # need to trim leading/trailing stopwords
                 if phrase.label_ != "CUSTOM" and self.stopwords is not None:
-                    while phrase and phrase[0].lower_ in self.stopwords:
+                    while phrase and (phrase[0].lower_ in self.stopwords or phrase[0].is_punct):
                         phrase = phrase[1:]
-                    while phrase and phrase[-1].lower_ in self.stopwords:
+                    while phrase and (phrase[-1].lower_ in self.stopwords or phrase[-1].is_punct):
                         phrase = phrase[:-1]
-
-                if not phrase:
-                    continue
-
-                retokenizer.merge(phrase, attrs=attrs)
+                
+                if phrase.label_ == "CUSTOM" or (1 < phrase.text.count(" ") + 1 < self.max_phrase_len):
+                    retokenizer.merge(phrase, attrs=attrs)
 
         return doc
 

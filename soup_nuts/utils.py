@@ -41,7 +41,7 @@ def read_lines(path: Union[Path, str], encoding: str = "utf-8") -> list[str]:
     Read the lines in a file
     """
     with open(path, encoding=encoding) as infile:
-        return [line for line in infile if line.strip()]
+        return [line.strip() for line in infile if line.strip()]
 
 
 def read_json(path: Union[Path, str], encoding: str = "utf-8") -> Union[list,dict]:
