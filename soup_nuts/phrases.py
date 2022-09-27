@@ -140,7 +140,7 @@ class PhraseMerger:
                     while len(phrase) > 1 and phrase[-1].is_punct:
                         phrase = phrase[:-1]
                 
-                if phrase.label_ == "CUSTOM" or (1 < phrase.text.count(" ") + 1 < self.max_phrase_len):
+                if phrase.label_ == "CUSTOM" or (1 <= phrase.text.count(" ") < self.max_phrase_len):
                     retokenizer.merge(phrase, attrs=attrs)
 
         return doc
