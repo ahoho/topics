@@ -220,9 +220,9 @@ Then we need to create a new python environment to run it:
 
 ```console
 $ cd soup_nuts/models/gensim
-$ conda create -n mallet python=3.9
-$ conda env update -n mallet --file gensim.yml
+$ conda create -n mallet python=3.8
 $ conda activate mallet
+$ pip install -r requirements.txt
 ```
 
 

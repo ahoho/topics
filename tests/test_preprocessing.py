@@ -421,7 +421,7 @@ class TestTokenization:
             detect_entities=True,
             detect_noun_chunks=True,
             double_count_phrases=False,
-            max_phrase_len=8,
+            max_phrase_len=7,
             token_regex=main.token_regex_callback("alphanum"),
             stopwords=main.stopwords_callback("english"),
             phrases=["e-cigarette", "e-cigarettes"], # hyphens to correct tokenization

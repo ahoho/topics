@@ -77,7 +77,7 @@ def _truncate_and_clean_doc(
     """
     Truncate a document to max_len by the rough number of tokens
     """
-    doc = re.sub("\s+", " ", doc) # remove linebreaks and extra spaces
+    doc = re.sub("\s+", " ", doc.strip()) # remove linebreaks and extra spaces
     if not max_len:
         return doc
     if len(doc.split()) > max_len:
@@ -242,6 +242,7 @@ def tokenize_docs(
     # how to convert `spacy.tokens.Token` to tuples of strings
     def to_string(x: Token) -> Union[tuple[str, str], tuple[str]]:
         text = x.lower_ if lowercase else x.text
+        text = text.strip()
         if lemmatize and " " not in text:
             text = x.lemma_.lower() if lowercase else x.lemma_
 
