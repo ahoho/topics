@@ -15,9 +15,11 @@ from sklearn.preprocessing import LabelEncoder
 
 from soup_nuts.metrics import (
     normalized_mutual_info_score, # TODO: adjusted?
+    avg_jcrd_agreement,
     adjusted_rand_score,
     topic_dists_over_runs,
     purity,
+    rbo_dist,
     unique_doc_words_over_runs,
     unique_topic_words_over_runs,
 )
@@ -55,7 +57,7 @@ NUM_TOPICS = [
     25, 50, 100, 200
 ]
 
-TOP_N_WORDS = 25
+TOP_N_WORDS = 50
 # signature is `predicted_labels, true_labels`
 CLUSTER_METRICS = {
     "adj_rand": adjusted_rand_score,
@@ -65,18 +67,22 @@ CLUSTER_METRICS = {
 }
 # signature is `doc_topic_runs, topic_word_runs`
 # TODO: move to a config file
+def _rbo_dist_td(x, y): return rbo_dist(x, y, 0.9)
+def _rbo_dist_tw(x, y): return rbo_dist(x, y, 1.0)
+
 STABILITY_METRICS = {
     "doc_topic": {
         "unique_doc_words": lambda dt, tw: unique_doc_words_over_runs(
             dt, tw, top_n=TOP_N_WORDS, summarize=True
         ),
-        "unique_doc_words_hard": lambda dt, tw: unique_doc_words_over_runs(
-            dt, tw, top_n=TOP_N_WORDS, hard_assignment=True, summarize=True
-        ),
-        "doc_topic_dists_corr": lambda dt, tw: topic_dists_over_runs(
+        # "unique_doc_words_hard": lambda dt, tw: unique_doc_words_over_runs(
+        #     dt, tw, top_n=TOP_N_WORDS, hard_assignment=True, summarize=True
+        # ),
+        "doc_topic_dists_rbo": lambda dt, tw: topic_dists_over_runs(
             doc_topic_runs=dt,
             summarize=True,
-            metric="correlation",
+            metric=_rbo_dist_td,
+            top_n_items="auto", # means we consider N // K items
             workers=multiprocessing.cpu_count() - 1,
             tqdm_kwargs={"leave": False, "desc": "Calculating doc-topic dists."}
         ),
@@ -85,10 +91,11 @@ STABILITY_METRICS = {
         "unique_topic_words": lambda dt, tw: unique_topic_words_over_runs(
             tw, top_n=TOP_N_WORDS, summarize=True
         ),
-        "topic_word_dists_corr": lambda dt, tw: topic_dists_over_runs(
+        "topic_word_dists_rbo": lambda dt, tw: topic_dists_over_runs(
             topic_word_runs=tw,
             summarize=True,
-            metric="correlation",
+            metric=_rbo_dist_tw,
+            top_n_items=TOP_N_WORDS,
             workers=multiprocessing.cpu_count() - 1,
             tqdm_kwargs={"leave": False, "desc": "Calculating topic-word dists"}
         ),

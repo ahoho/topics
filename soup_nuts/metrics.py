@@ -3,6 +3,7 @@ from multiprocessing import Pool
 from collections import defaultdict
 from itertools import combinations
 
+import rbo
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -23,7 +24,7 @@ def _gen_measure_name(coherence_measure, window_size, top_n):
 
 
 def _summarize(data):
-    return pd.Series(data).describe().to_dict()
+    return {**pd.Series(data).describe().to_dict(), "sum": np.sum(data)}
 
 
 def coherence(
@@ -74,6 +75,23 @@ def purity(model_labels, gold_labels):
           .sum()
     )
     return purity_sum / len(model_labels)
+
+
+def rbo_dist(x, y, pval):
+    """Rank-biased overlap distance. Assumes x, y truncated to top n items"""
+    return 1 - rbo.RankingSimilarity(x, y).rbo(p=pval)
+
+def avg_jcrd_agreement(x, y):
+    """Average Jaccard distance. Assumes x, y truncated to top n items"""
+    score = 0.0
+    max_set_size = len(x)
+    for depth in range(1, max_set_size + 1):
+        s1 = set(x[:depth])
+        s2 = set(y[:depth])
+        jcrd = len(s1 & s2)/len(s1 | s2)
+        score += jcrd
+    score = score/max_set_size
+    return 1.0 - score
 
 
 def unique_doc_words_over_runs(doc_topic_runs, topic_word_runs, top_n=15, hard_assignment=True, summarize=False):
@@ -159,6 +177,7 @@ def topic_dists_over_runs(
     summarize=False,
     seed=None,
     workers=1,
+    top_n_items=None, # for rank based metrics ("rbo", "jaccard"), select top n items
     tqdm_kwargs={},
 ):
     """
@@ -186,20 +205,22 @@ def topic_dists_over_runs(
         raise ValueError("Supply either `topic_word_runs` or `doc_topic_runs`, not both")
     
     # prepare the estimates
-    # apprently faster for cdist,stackoverflow.com/a/50671733/5712749
-    to_float64 = lambda x: x.astype(np.float64)
-    if topic_word_runs is not None:
-        transform = to_float64
-        estimates = topic_word_runs
-    if doc_topic_runs is not None:
-        # these must be transposed and (possibly) normalized
-        if metric == "jensenshannon":
-            transform = lambda x: to_float64(x.T/x.T.sum(1, keepdims=True))
-        else:
-            transform = lambda x: to_float64(x.T)
-        estimates = doc_topic_runs
-    
-    estimates = [transform(est) for est in estimates]
+    estimates = doc_topic_runs if doc_topic_runs is not None else topic_word_runs
+    for i in range(len(estimates)):
+        x = estimates[i]
+        # apprently float64 faster for cdist,stackoverflow.com/a/50671733/5712749
+        x = x.astype(np.float64)
+        if doc_topic_runs is not None:
+            x = x.T
+        if metric == "jensenshannon" and not np.allclose(x.sum(1), 1):
+            x = x/x.sum(1, keepdims=True)
+
+        if top_n_items == "auto":
+            top_n_items = x.shape[1] // x.shape[0]
+        
+        if top_n_items is not None: # for rank-based metrics
+            x = (-x).argsort(1)[:, :top_n_items]
+        estimates[i] = x
     
     # sample the combinations of runs
     runs = len(estimates)
@@ -222,11 +243,10 @@ def topic_dists_over_runs(
         with Pool(processes=workers) as pool:
             args = [(estimates[idx_a], estimates[idx_b], metric) for idx_a, idx_b in combins]
             result = pool.imap_unordered(_min_total_topic_dist, args)
-            min_dists = np.array([r for r in result])
+            min_dists = np.array([r for r in tqdm(result, total=sample_n, **tqdm_kwargs)])
 
     min_dists = np.sort(min_dists, axis=1)
-
-    if summarize: 
+    if summarize:
         # not totally obvious how to report a summary
         # for now: we take the total cost and report summary over runs
         # could be an issue if different models' distrubtions have different entropies
@@ -243,7 +263,15 @@ def _min_total_topic_dist(args):
     return dists[row_idx, col_idx]
 
 
-def doc_words_dists_over_runs(doc_topic_runs, topic_word_runs, sample_n=1, seed=None, tqdm_kwargs={}):
+def doc_words_dists_over_runs(
+    doc_topic_runs,
+    topic_word_runs,
+    batchsize=1000,
+    sample_n=1,
+    workers=1,
+    seed=None,
+    tqdm_kwargs={}
+):
     """
     For each document, calculate the jensen-shannon distance between its predicted word
     probabilities (i.e., reconstructed BoW) in each run
@@ -260,9 +288,13 @@ def doc_words_dists_over_runs(doc_topic_runs, topic_word_runs, sample_n=1, seed=
 
     # create the document-word estimates
     doc_word_probs = np.zeros((runs, n, v))
-    for i, (doc_topic, topic_word) in enumerate(zip(doc_topic_runs, topic_word_runs)):
-        prob = doc_topic @ topic_word
-        doc_word_probs[i] = prob
+    for run_i, (doc_topic, topic_word) in enumerate(zip(doc_topic_runs, topic_word_runs)):
+        for j in range(n // batchsize + 1):
+            bs = np.s_[j*batchsize:(j+1)*batchsize]
+            # NB: assumes topic-word is normalized, which will violate the 
+            # true model for d-vae, scholar, and others
+            p_hat = doc_topic[bs] @ topic_word
+            doc_word_probs[run_i][bs] = p_hat
 
     # sample the combinations of runs
     combins = list(combinations(range(runs), 2))
@@ -273,7 +305,8 @@ def doc_words_dists_over_runs(doc_topic_runs, topic_word_runs, sample_n=1, seed=
     
     doc_word_dists = np.zeros((len(combins), n))
     for i, (idx_a, idx_b) in enumerate(tqdm(combins, **tqdm_kwargs)):
-        dists = jensenshannon(doc_word_probs[idx_a], doc_word_probs[idx_b], axis=1) # needs scipy 1.7
+        # may need to dispatch to workers; axis arg requires scipy 1.7.
+        dists = jensenshannon(doc_word_probs[idx_a], doc_word_probs[idx_b], axis=1)
         doc_word_dists[i] = dists
 
     return doc_word_dists
