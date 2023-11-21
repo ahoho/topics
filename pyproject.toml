@@ -1,9 +1,7 @@
 [tool.poetry]
 name = "soup-nuts"
-version = "0.1.0"
-description = """A topic modeling package that aims to cover the entire \
-    preprocessing-estimation-analysis pipeline: it's soup to nuts.
-    """
+version = "0.1.1"
+description = """A topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline: it's soup to nuts."""
 authors = ["Alexander Hoyle <hoyle@umd.edu>"]
 readme = "README.md"
 
@@ -13,10 +11,12 @@ soup-nuts = "soup_nuts.main:app"
 [tool.poetry.dependencies]
 python = "^3.9"
 spacy = "^3.0"
-scikit-learn = "^0.24"
+scikit-learn = "^1.3"
 tqdm = "*"
 typer = {extras = ["all"], version = "^0.3.2"}
 gensim = "^4.0"
+rbo = "^0.1.3"
+pandas = "^2.1.3"
 
 [tool.poetry.dependencies.en_core_web_sm]
 url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz"
@@ -25,5 +25,5 @@ url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_s
 pytest = "^5.2"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.7.0"]
 build-backend = "poetry.core.masonry.api"
