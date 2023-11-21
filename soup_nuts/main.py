@@ -629,7 +629,7 @@ def detect_phrases(
         if text_key is None:
             raise ValueError("Input is `jsonl`, but `text_key` unspecified.")
         docs_reader = lambda: read_jsonl(
-            input_path, text_key, id_key, max_doc_size, encoding
+            input_path, text_key, id_key, None, max_doc_size, encoding
         )
 
     if input_format.value == "csv":
@@ -638,7 +638,7 @@ def detect_phrases(
         if text_key is None:
             raise ValueError("Input is `csv`, but `text_key` unspecified.")
         docs_reader = lambda: read_csv(
-            input_path, text_key, id_key, max_doc_size, encoding
+            input_path, text_key, id_key, None, max_doc_size, encoding
         )
 
     # retrieve the total number of documents for progress bars
