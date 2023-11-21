@@ -70,6 +70,33 @@ def read_jsonl(
                     yield _truncate_and_clean_doc(data[text_key], max_doc_size), metadata
 
 
+def read_csv(
+    paths: Union[Union[Path, str], list[Union[Path, str]]],
+    text_key: str = "text",
+    id_key: Optional[str] = None,
+    other_keys: Optional[list[str]] = None,
+    max_doc_size: Optional[int] = None,
+    encoding: str = "utf-8",
+) -> Iterator[tuple[str, dict]]:
+    """
+    Lazily read in contents of csv files.
+    """
+    import pandas as pd
+    
+    if isinstance(paths, (Path, str)):
+        paths = [paths]
+    for path in paths:
+        df = pd.read_csv(path, encoding=encoding)
+        for i, row in df.iterrows():
+            if row[text_key]:
+                id = str(row[id_key]) if id_key else f"{path}:{i:09}"
+                metadata = {"id": id}
+                if other_keys is not None:
+                    metadata.update({k: row[k] for k in other_keys})
+                yield _truncate_and_clean_doc(row[text_key], max_doc_size), metadata
+
+
+
 def _truncate_and_clean_doc(
     doc: str,
     max_len: Optional[int] = None,
@@ -77,7 +104,7 @@ def _truncate_and_clean_doc(
     """
     Truncate a document to max_len by the rough number of tokens
     """
-    doc = re.sub("\s+", " ", doc.strip()) # remove linebreaks and extra spaces
+    doc = re.sub(r"\s+", " ", doc.strip()) # remove linebreaks and extra spaces
     if not max_len:
         return doc
     if len(doc.split()) > max_len:
@@ -111,7 +138,7 @@ def docs_to_matrix(
     retain_text: bool = False,
     as_tuples: bool = True,
     n_process: int = 1,
-) -> tuple[sparse.csr.csr_matrix, dict[str, int], list[dict]]:
+) -> tuple[sparse.csr_matrix, dict[str, int], list[dict]]:
     """
     Create a document-term matrix for a list of documents
     """
@@ -356,7 +383,7 @@ class CountVectorizerWithMetadata(CountVectorizer):
     def fit_transform(
         self,
         raw_documents: Iterable[tuple[str, str]],
-    ) -> sparse.csr.csr_matrix:
+    ) -> sparse.csr_matrix:
         """
         Allows us to collect the document metadata during processing while still maintaining
         a lazy generator

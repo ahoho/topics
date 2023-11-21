@@ -78,10 +78,10 @@ Below we list a partial list of arguments (again, see `--help` for more):
     - `--phrases`
         - An external underscore-connected phrase list _supplements_ phrases found with spaCy (e.g., `nintendo_gameboy_advance`). Use `soup-nuts detect-phrases` to uncover statistical collocations.
  - Data formatting
-    - `--jsonl-text-key, --jsonl-id-key`
-        - The keys corresponding to the text and id in a jsonlines file. ids created automatically based on the line number in the file if not provided.
-    - `--jsonl-metadata-keys`
-        - Keys in jsonlines input data that you would like to pass through to the processed result (in a `<split>.metadata.jsonl` file). Separate with commas, e.g., `key1,key2,key3`. Can be helpful (if storage-intensive) to include the original raw text.
+    - `--text-key, --id-key`
+        - The keys corresponding to the text and id in a csv or jsonlines file. ids created automatically based on the line number in the file if not provided.
+    - `--metadata-keys`
+        - Keys in csv or jsonlines input data that you would like to pass through to the processed result (in a `<split>.metadata.jsonl` file). Separate with commas, e.g., `key1,key2,key3`. Can be helpful (if storage-intensive) to include the original raw text.
     - `--output-text`
         - Output the processed text in the same order as the input (e.g., `"The lamb lies down on Broadway" -> "lamb lies down broadway"`). Needed for accurate internal coherence calculations (evaluating on a train/val/test set).
 

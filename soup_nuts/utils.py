@@ -100,7 +100,7 @@ def save_params(params: dict[str, Any], fpath: Union[str, Path]):
 def save_jsonl(
     metadata: list[dict[str, Any]],
     outpath: Union[str, Path],
-    dtm: Optional[sparse.csr.csr_matrix] = None,
+    dtm: Optional[sparse.csr_matrix] = None,
     vocab: Optional[dict[str, int]] = None,
 ):
     """

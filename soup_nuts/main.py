@@ -12,7 +12,7 @@ from scipy import sparse
 from spacy.lang.en.stop_words import STOP_WORDS
 from gensim.models.phrases import ENGLISH_CONNECTOR_WORDS
 
-from .preprocess import read_docs, read_jsonl, docs_to_matrix
+from .preprocess import read_docs, read_jsonl, read_csv, docs_to_matrix
 from .phrases import detect_phrases as detect_phrases_
 from .metrics import coherence
 from .utils import (
@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 class InputFormat(str, Enum):
     text: str = "text"
     jsonl: str = "jsonl"
+    csv: str = "csv"
 
 
 def token_regex_callback(value: str) -> re.Pattern:
@@ -93,15 +94,15 @@ def preprocess(
         True,
         help="Treat each line in a file as a document (else, each file is a document). ",
     ),
-    jsonl_text_key: Optional[str] = None,
-    jsonl_id_key: Optional[str] = typer.Option(
+    text_key: Optional[str] = None,
+    id_key: Optional[str] = typer.Option(
         None,
         help=(
             "Unique document id for each row in a jsonl. "
             "Will be generated automatically if not specified."
         ),
     ),
-    jsonl_metadata_keys: Optional[str] = typer.Option(
+    metadata_keys: Optional[str] = typer.Option(
         None,
         help=(
             "Other keys to retain, which will be output in a jsonl file. "
@@ -263,12 +264,22 @@ def preprocess(
     if input_format.value == "jsonl":
         if not lines_are_documents:
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
-        if jsonl_text_key is None:
-            raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
-        jsonl_metadata_keys = jsonl_metadata_keys.split(",") if jsonl_metadata_keys else None
-        docs = read_jsonl(input_path, jsonl_text_key, jsonl_id_key, jsonl_metadata_keys, max_doc_size, encoding)
-        val_docs = read_jsonl(val_path, jsonl_text_key, jsonl_id_key, jsonl_metadata_keys, max_doc_size, encoding)
-        test_docs = read_jsonl(test_path, jsonl_text_key, jsonl_id_key, jsonl_metadata_keys, max_doc_size, encoding)
+        if text_key is None:
+            raise ValueError("Input is `jsonl`, but `text_key` unspecified.")
+        metadata_keys = metadata_keys.split(",") if metadata_keys else None
+        docs = read_jsonl(input_path, text_key, id_key, metadata_keys, max_doc_size, encoding)
+        val_docs = read_jsonl(val_path, text_key, id_key, metadata_keys, max_doc_size, encoding)
+        test_docs = read_jsonl(test_path, text_key, id_key, metadata_keys, max_doc_size, encoding)
+
+    if input_format.value == "csv":
+        if not lines_are_documents:
+            raise ValueError("Input is `csv`, but `lines_are_documents` is False")
+        if text_key is None:
+            raise ValueError("Input is `csv`, but `text_key` unspecified.")
+        metadata_keys = metadata_keys.split(",") if metadata_keys else None
+        docs = read_csv(input_path, text_key, id_key, metadata_keys, max_doc_size, encoding)
+        val_docs = read_csv(val_path, text_key, id_key, metadata_keys, max_doc_size, encoding)
+        test_docs = read_csv(test_path, text_key, id_key, metadata_keys, max_doc_size, encoding)
 
     if vocabulary and (detect_entities or detect_noun_chunks):
         logger.warn(
@@ -532,8 +543,8 @@ def detect_phrases(
         True,
         help="Treat each line in a file as a document (else, each file is a document). ",
     ),
-    jsonl_text_key: Optional[str] = None,
-    jsonl_id_key: Optional[str] = None,
+    text_key: Optional[str] = None,
+    id_key: Optional[str] = None,
     max_doc_size: Optional[int] = typer.Option(
         None, min=0, help="Maximum document size in whitespace-delimited tokens"
     ),
@@ -615,10 +626,19 @@ def detect_phrases(
     if input_format.value == "jsonl":
         if not lines_are_documents:
             raise ValueError("Input is `jsonl`, but `lines_are_documents` is False")
-        if jsonl_text_key is None:
-            raise ValueError("Input is `jsonl`, but `jsonl_text_key` unspecified.")
+        if text_key is None:
+            raise ValueError("Input is `jsonl`, but `text_key` unspecified.")
         docs_reader = lambda: read_jsonl(
-            input_path, jsonl_text_key, jsonl_id_key, max_doc_size, encoding
+            input_path, text_key, id_key, max_doc_size, encoding
+        )
+
+    if input_format.value == "csv":
+        if not lines_are_documents:
+            raise ValueError("Input is `csv`, but `lines_are_documents` is False")
+        if text_key is None:
+            raise ValueError("Input is `csv`, but `text_key` unspecified.")
+        docs_reader = lambda: read_csv(
+            input_path, text_key, id_key, max_doc_size, encoding
         )
 
     # retrieve the total number of documents for progress bars
