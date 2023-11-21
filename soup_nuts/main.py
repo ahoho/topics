@@ -665,7 +665,7 @@ def detect_phrases(
         total_docs=total_docs,
     )
     save_params(params, Path(output_dir, "params.json"))
-    save_lines(phrases, Path(output_dir, "phrases.json"))
+    save_lines(phrases, Path(output_dir, "phrases.txt"))
 
 
 if __name__ == "__main__":

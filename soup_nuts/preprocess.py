@@ -175,8 +175,6 @@ def docs_to_matrix(
     # CountVectorizer is considerably faster than gensim for creating the doc-term mtx
     # TODO: still need to change to gensim since it will prune large vocabularies live
     cv = CountVectorizerWithMetadata(
-        preprocessor=lambda x: x,
-        analyzer=lambda x: x,
         min_df=float(min_doc_freq) if min_doc_freq < 1 else int(min_doc_freq),
         max_df=float(max_doc_freq) if max_doc_freq <=1 else int(max_doc_freq),
         max_features=max_vocab_size,
@@ -376,9 +374,22 @@ def create_pipeline(
 
 
 class CountVectorizerWithMetadata(CountVectorizer):
-    def __init__(self, *args, **kwargs):
-        self.limit_vocab_by_df = kwargs.pop("limit_vocab_by_df", False)
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        min_df=1,
+        max_df=1.0,
+        max_features=None,        
+        vocabulary=None,
+        limit_vocab_by_df=False,
+    ):
+        self.limit_vocab_by_df = limit_vocab_by_df
+        super().__init__(
+            analyzer=lambda x: x,
+            min_df=min_df,
+            max_df=max_df,
+            max_features=max_features,
+            vocabulary=vocabulary,
+        )
 
     def fit_transform(
         self,
