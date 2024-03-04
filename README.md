@@ -1,11 +1,14 @@
-# Is Automated Topic Model Evaluation Broken?
+# Topic Model Evaluation
 
-Package and data to run experiments for [our paper](https://arxiv.org/abs/2107.02173).
+Package and data to run experiments for our NeurIPS paper, [*Is Automated Topic Model Evaluation Broken?*](https://arxiv.org/abs/2107.02173) and our Findings of EMNLP paper, [*Are Neural Topic Models Broken?*](https://aclanthology.org/2022.findings-emnlp.390/)
 
 Preprocessing & coherence calculations are provided as part of an easy-to-use, well-documented package called `soup-nuts` (see installation and usage instructions below). Links to the processed Wikipedia data used in the paper are also listed below. We hope that this tool encourages standardized & reproducible topic model evaluation.
 
+Data is linked for download [below](#download-data)
+
 Please cite us if you find this package useful, and do not hesitate to create an issue or email us if you have problems!
 
+If you use the human annotations or preprocessing:
 ```
 @inproceedings{hoyle-etal-2021-automated,
     title = "Is Automated Topic Evaluation Broken? The Incoherence of Coherence",
@@ -18,6 +21,23 @@ Please cite us if you find this package useful, and do not hesitate to create an
     booktitle = "Advances in Neural Information Processing Systems",
     year = "2021",
     url = "https://arxiv.org/abs/2107.02173",
+}
+```
+
+If you evaluate ground-truth evaluations or stability:
+```
+@inproceedings{hoyle-etal-2022-neural,
+    title = "Are Neural Topic Models Broken?",
+    author = "Hoyle, Alexander Miserlis  and
+      Goel, Pranav  and
+      Sarkar, Rupak  and
+      Resnik, Philip",
+    booktitle = "Findings of the Association for Computational Linguistics: EMNLP 2022",
+    year = "2022",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.findings-emnlp.390",
+    doi = "10.18653/v1/2022.findings-emnlp.390",
+    pages = "5321--5344",
 }
 ```
 
@@ -88,11 +108,11 @@ Below we list a partial list of arguments (again, see `--help` for more):
 ## Reproducibility
 ### Data
 
-Scripts to process the data as in the paper:
+Scripts to process the data as in the NeurIPS paper:
  - [wikipedia](data/wikitext/process-data.sh)
  - [nytimes](data/nytimes/process-data.sh)
 
-To process a new dataset similarly to the paper, use the following setup
+To process a new dataset in the same way, use the following setup
 
 ```console
 soup-nuts preprocess \
@@ -114,20 +134,32 @@ soup-nuts preprocess \
 
 To use the exact vocabulary from our wikipedia settings, pass `--vocabulary` and include [this file.](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/vocab.json)
 
+### Download data
+
+We share the data for our papers here:
+- NeurIPS paper data (not labeled)
+    - Wikitext. `train` is the 28-thousand article [WikiText-103](https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/), `full` is a 4.6-million article Wikipedia dump from the same period.
+        - jsonlines files of fully pre-processed, sequential text to calculate coherence scores
+            - Format is `{"tokenized_text": "This is a document.", "id": 0 }`
+            - [train.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.metadata.jsonl)
+            - [full.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.metadata.jsonl)
+        - document-term matrices (read with `scipy.sparse.load_npz`)
+            - [train.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.dtm.npz)
+            - [full.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.dtm.npz)
+         - Vocabulary file (this is not necessary)
+            - [vocab.json](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/vocab.json)
+    - NYTimes data is licenced by LDC, but please contact us and we can arrange access to processed data
+- Findings of EMNLP paper (with hierarchical labels for each document). Data has `"tokenized_text"` which corresponds to the tokenized text used for the models. The topline results in the paper are from `train`; `test` is an additional setting that includes unseen labels at the lower level of the hierarchy (labels are maintained at the top level).
+    -  Wikitext. Raw text is in `"text"`, labels are in `"supercategory", "category", "subcategory"` (only the last two are used in the paper)
+        -  [train.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics-emnlp.findings-2022/wikitext-labeled/train.metadata.jsonl)
+        -  [test.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics-emnlp.findings-2022/wikitext-labeled/test.metadata.jsonl)
+    -  Bills. Raw text is in `"summary"`, labels are `"topic", "subtopic"`
+        -  [train.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics-emnlp.findings-2022/bills-labeled/train.metadata.jsonl)
+        -  [test.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics-emnlp.findings-2022/bills-labeled/test.metadata.jsonl)
+
 ### Metrics
 
 We use gensim to standardize metric calculations. You can download processed reference wikipedia corpora used in the paper at the following links:
-
- - Vocabulary file (this is not nece)
-    - [vocab.json](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/vocab.json)
- - Processed data files. `train` is the 28-thousand article [WikiText-103](https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/), `full` is a 4.6-million article Wikipedia dump from the same period.
-    - jsonlines files of fully pre-processed, sequential text to calculate coherence scores
-        - Format is `{"tokenized_text": "This is a document.", "id": 0 }`
-        - [train.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.metadata.jsonl)
-        - [full.metadata.jsonl](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.metadata.jsonl)
-    - document-term matrices (read with `scipy.sparse.load_npz`)
-        - [train.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/train.dtm.npz)
-        - [full.dtm.npz](https://umd-clip-public.s3.amazonaws.com/topics_neurips_2021/wikitext/full.dtm.npz)
 
 To obtain metrics on topics, run `soup-nuts coherence` with the following arguments:
  - `--topics-fpath`
