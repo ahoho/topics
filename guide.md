@@ -32,22 +32,22 @@ You should be able to run everything on a standard laptop; everything should wor
 
 Everything is wrapped up into a package called `soup-nuts`.
 
-You first need to get [`poetry`](https://python-poetry.org/docs/).
+First install [`uv`](https://docs.astral.sh/uv/) (e.g., `brew install uv`, or `curl -LsSf https://astral.sh/uv/install.sh | sh`).
 
-`poetry` can create virtual environments automatically, but will also detect any activated virtual environment and use that instead (e.g., if you are using [conda](https://docs.conda.io/en/latest/miniconda.html), run `conda create -n soup-nuts python=3.9 && conda activate soup-nuts`).
-
-Then from the repository root, run
+Then, from the repository root, run
 
 ```console
-$ poetry install
+$ uv sync
 ```
+
+This creates an isolated `.venv/` on a uv-managed Python 3.12 and installs `soup-nuts` with all of its dependencies (pinned in `uv.lock`). uv manages the interpreter and virtualenv for you.
 
 Check the installation with 
 
 ```console
-$ soup-nuts --help
+$ uv run soup-nuts --help
 ```
 
-If you do not use poetry, or you have issues with installation, you can run with `python -m soup_nuts.main <command name>`
+`uv run` uses the project environment automatically (nothing to activate). If you have issues, you can also run via `uv run python -m soup_nuts.main <command name>`.
 
 ##

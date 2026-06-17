@@ -43,23 +43,23 @@ If you evaluate ground-truth evaluations or stability:
 
 # Installation
 ## Preprocessing and metrics
-To install the preprocessing and metric evaluation package (called `soup-nuts`), you first need to get [`poetry`](https://python-poetry.org/docs/).
+To install the preprocessing and metric evaluation package (called `soup-nuts`), first install [`uv`](https://docs.astral.sh/uv/) (e.g., `brew install uv`, or `curl -LsSf https://astral.sh/uv/install.sh | sh`).
 
-`poetry` can create virtual environments automatically, but will also detect any activated virtual environment and use that instead (e.g., if you are using [conda](https://docs.conda.io/en/latest/miniconda.html), run `conda create -n soup-nuts python=3.9 && conda activate soup-nuts`).
-
-Then from the repository root, run
+Then, from the repository root, run
 
 ```console
-$ poetry install
+$ uv sync
 ```
+
+This creates an isolated virtual environment in `.venv/` on a uv-managed Python 3.12, installs `soup-nuts` and all of its dependencies (pinned in `uv.lock`), and downloads the spaCy English model. uv manages the Python interpreter and the virtualenv for you — there's no separate environment to create or activate.
 
 Check the installation with 
 
 ```console
-$ soup-nuts --help
+$ uv run soup-nuts --help
 ```
 
-If you do not use poetry, or you have issues with installation, you can run with `python -m soup_nuts.main <command name>`
+`uv run` transparently uses the project environment, so there's nothing to activate (though `source .venv/bin/activate` works if you prefer). Every `soup-nuts ...` command below can be run as `uv run soup-nuts ...`. If you have installation issues, you can also run via `uv run python -m soup_nuts.main <command name>`.
 
 ## Models
 Models need their own environments. Requirements are in the `.yml` files in each of the `soup_nuts/models/<model_name>` directories, and can be installed with
@@ -214,20 +214,18 @@ Some models and settings are not yet fully integrated in the pipeline, and requi
 # End-to-end example
 Below, we outline how to run a single mallet model on some example data.
 
-After installing `poetry` and miniconda (see above), clone the repo, create the environment and install the packages.
+After installing `uv` and miniconda (see above), clone the repo and set up the `soup-nuts` environment.
 
 ```console
 $ git clone -b dev https://github.com/ahoho/topics.git --recurse-submodules
-$ conda create -n soup-nuts python=3.9
-$ conda activate soup-nuts
-$ poetry install
-$ pip install pandas
+$ cd topics
+$ uv sync
 ```
 
 With it installed, you can now process data. To process our example data with some sensible settings:
 
 ```console
-soup-nuts preprocess \
+uv run soup-nuts preprocess \
     data/examples/speeches_2020.01.04-2020.05.04.jsonl \
     data/examples/processed-speeches \
     --input-format jsonl \

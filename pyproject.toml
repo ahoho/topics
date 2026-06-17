@@ -1,29 +1,52 @@
-[tool.poetry]
+[project]
 name = "soup-nuts"
 version = "0.1.1"
-description = """A topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline: it's soup to nuts."""
-authors = ["Alexander Hoyle <hoyle@umd.edu>"]
+description = "A topic modeling package that aims to cover the entire preprocessing-estimation-analysis pipeline: it's soup to nuts."
+authors = [{ name = "Alexander Hoyle", email = "hoyle@umd.edu" }]
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "spacy>=3.8,<3.9",
+    "en_core_web_sm",
+    "scikit-learn>=1.6",
+    "scipy>=1.11",
+    "numpy>=2",
+    "pandas>=2.2",
+    "gensim>=4.4",
+    "typer>=0.12",
+    # spaCy 3.8's CLI imports click directly, but typer 0.26 no longer installs it.
+    "click>=8.1",
+    "tqdm",
+    "rbo>=0.1.3",
+]
 
-[tool.poetry.scripts]
+[project.scripts]
 soup-nuts = "soup_nuts.main:app"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-spacy = "^3.7"
-scikit-learn = "^1.3"
-tqdm = "*"
-typer = {extras = ["all"], version = "^0.9.0"}
-gensim = "^4.0"
-rbo = "^0.1.3"
-pandas = "^2.1.3"
+[dependency-groups]
+dev = ["pytest>=8"]
 
-[tool.poetry.dependencies.en_core_web_sm]
-url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1.tar.gz"
+[tool.uv]
+# rbo 0.1.3 (latest) declares numpy<2.0, but its code runs fine on numpy 2;
+# override so the rest of the stack can use modern numpy.
+override-dependencies = ["numpy>=2"]
 
-[tool.poetry.dev-dependencies]
-pytest = "^5.2"
+# The spaCy English model is pinned to the matching 3.8 release and installed
+# straight from its release wheel (replaces Poetry's url-dependency).
+[tool.uv.sources]
+en_core_web_sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
 
 [build-system]
-requires = ["poetry-core>=1.7.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["soup_nuts"]
+exclude = ["soup_nuts/models"]
+
+[tool.pytest.ini_options]
+# Only collect the core package tests. The model submodules under
+# soup_nuts/models/ are separate projects with their own (conda) environments
+# and test dependencies (tensorflow, matplotlib, ...), and each ships its own
+# top-level `tests` package that otherwise collides with this one.
+testpaths = ["tests"]

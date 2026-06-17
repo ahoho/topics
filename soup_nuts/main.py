@@ -42,9 +42,9 @@ def token_regex_callback(value: str) -> re.Pattern:
     if value == "alpha":
         return re.compile("[a-zA-Z]")
     if value == "alphanum":
-        return re.compile("\w", flags=re.UNICODE)
+        return re.compile(r"\w", flags=re.UNICODE)
     if value == "wordlike":
-        return re.compile("^[\w-]*[a-zA-Z][\w-]*$", flags=re.UNICODE)
+        return re.compile(r"^[\w-]*[a-zA-Z][\w-]*$", flags=re.UNICODE)
     if value == "all":
         return None
     return re.compile(value, flags=re.UNICODE)
