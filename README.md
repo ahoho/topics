@@ -1,5 +1,8 @@
 # Topic Model Evaluation
 
+> [!NOTE]
+> There's a (vibe-coded) [`uv` branch](https://github.com/ahoho/topics/tree/uv-migration) that migrates packaging from Poetry to [uv](https://docs.astral.sh/uv/) and bumps the dependencies to a current stack. I used Claude Code to update the package dependencies and migrate to uv. Tests all pass, but I haven't verified things myself.
+
 Package and data to run experiments for our NeurIPS paper, [*Is Automated Topic Model Evaluation Broken?*](https://arxiv.org/abs/2107.02173) and our Findings of EMNLP paper, [*Are Neural Topic Models Broken?*](https://aclanthology.org/2022.findings-emnlp.390/)
 
 Preprocessing & coherence calculations are provided as part of an easy-to-use, well-documented package called `soup-nuts` (see installation and usage instructions below). Links to the processed Wikipedia data used in the paper are also listed below. We hope that this tool encourages standardized & reproducible topic model evaluation.
